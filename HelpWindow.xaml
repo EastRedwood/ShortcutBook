@@ -6,6 +6,7 @@
         Background="{DynamicResource Bg}" Foreground="{DynamicResource Text}"
         FontFamily="Segoe UI, Malgun Gothic" FontSize="13" UseLayoutRounding="True"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="NoResize">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
     <StackPanel Margin="26,18,26,18">
         <TextBlock Text="{l:T app_title}" FontSize="20" FontWeight="SemiBold"/>
         <TextBlock x:Name="VersionText" Foreground="{DynamicResource SubText}" Margin="0,4,0,0"/>
@@ -24,4 +25,5 @@
             </StackPanel>
         </Border>
     </StackPanel>
+    </ScrollViewer>
 </Window>

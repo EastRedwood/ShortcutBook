@@ -9,6 +9,7 @@ public partial class HelpWindow : Window
         InitializeComponent();
         ThemeService.Hook(this);
         PreviewKeyDown += (_, e) => { if (e.Key == System.Windows.Input.Key.Escape) Close(); };
+        MaxHeight = Math.Max(300, SystemParameters.WorkArea.Height - 40);
         VersionText.Text = AppInfo.VersionText;
         MailRun.Text = AppInfo.AuthorMail;
     }
