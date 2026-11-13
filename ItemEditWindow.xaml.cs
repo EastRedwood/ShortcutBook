@@ -42,6 +42,15 @@ public partial class ItemEditWindow : Window
         DeleteBtn.Visibility = isNew ? Visibility.Collapsed : Visibility.Visible;
         UpdatePreview();
         Loaded += (_, _) => { NameBox.Focus(); NameBox.SelectAll(); };
+        // Ctrl+Enter = 바로 저장하고 닫기 (여러 줄 입력 칸에서도 줄바꿈이 되지 않게 먼저 가로챈다)
+        PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == System.Windows.Input.Key.Enter && System.Windows.Input.Keyboard.Modifiers == System.Windows.Input.ModifierKeys.Control)
+            {
+                e.Handled = true;
+                OnSave(this, new RoutedEventArgs());
+            }
+        };
     }
 
     // ─────────────── 아이콘 미리보기 ───────────────

@@ -490,6 +490,12 @@ public partial class MainWindow : Window
         List.SelectedItem = _dragVm;
         _dragSource = this;
         _dragItem = _dragVm;
+        // 끄는 동안 마우스 휠로 (커서 아래 창의) 목록을 스크롤할 수 있게 한다
+        using var wheel = new DragWheelHook((pt, delta) =>
+        {
+            foreach (var w in Application.Current.Windows.OfType<MainWindow>())
+                DragWheelHook.ScrollListAt(w.List, pt, delta);
+        });
         try { DragDrop.DoDragDrop((DependencyObject)sender, new DataObject(DragFormat, _dragVm.Item.Id), DragDropEffects.Move); }
         finally { ClearMark(); _dragVm = null; _dragSource = null; _dragItem = null; }
     }
@@ -502,14 +508,30 @@ public partial class MainWindow : Window
     MainWindow? ForeignSource => _dragSource != null && _dragSource != this && _dragItem != null ? _dragSource : null;
 
     /// <summary>다른 창이나 다른 목록에서 옮겨 온 항목을 이 목록 끝에 넣는다.</summary>
-    void ReceiveItem(ListItem it)
+    /// <summary>같은 경로·주소 등록 설정을 따른다. 제외되면 false (원래 목록에서 빼지 않는다).</summary>
+    bool ReceiveItem(ListItem it)
     {
-        var vm = new ItemVM(it) { CanReorder = CanReorder };
-        _all.Add(vm);
+        var (vm, skipped) = Place(it);
+        if (skipped) return false;
         Save();
         UpdateEmpty();
-        List.ScrollIntoView(vm);
+        if (vm != null) List.ScrollIntoView(vm);
+        return true;
     }
+
+    /// <summary>파일로만 있는 목록에 넣을 때의 같은 처리.</summary>
+    static bool PlaceInto(List<ListItem> items, ListItem it)
+    {
+        var key = TargetKey(it.Target);
+        var dup = App.Settings.DuplicateMode == 0 || key.Length == 0 ? null : items.FirstOrDefault(x => TargetKey(x.Target) == key);
+        if (dup == null) { items.Add(it); return true; }
+        if (App.Settings.DuplicateMode == 1) return false;
+        dup.CopyFrom(it);
+        return true;
+    }
+
+    void ShowSkipped(ListItem it) =>
+        MessageBox.Show(this, Loc.F("dup_skipped_msg", it.Target), AppInfo.Name, MessageBoxButton.OK, MessageBoxImage.Information);
 
     /// <summary>항목을 이 목록에서 빼낸다 (다른 곳으로 옮긴 뒤).</summary>
     void RemoveMoved(ItemVM vm)
@@ -526,8 +548,8 @@ public partial class MainWindow : Window
         if (src == null || item == null || src == this) return;
         Dispatcher.BeginInvoke(new Action(() =>
         {
-            ReceiveItem(item.Item);
-            src.RemoveMoved(item);
+            if (ReceiveItem(item.Item)) src.RemoveMoved(item);
+            else ShowSkipped(item.Item);
         }));
     }
 
@@ -555,13 +577,16 @@ public partial class MainWindow : Window
         catch { return; }
         if (path.Equals(ListPath, StringComparison.OrdinalIgnoreCase)) return;
         var w = App.Instance.FindWindow(path, this);
-        if (w != null) w.ReceiveItem(drag.Item);
+        if (w != null)
+        {
+            if (!w.ReceiveItem(drag.Item)) { ShowSkipped(drag.Item); return; }
+        }
         else
         {
             try
             {
                 var doc = ListDocument.Load(path);
-                doc.Items.Add(drag.Item);
+                if (!PlaceInto(doc.Items, drag.Item)) { ShowSkipped(drag.Item); return; }
                 doc.Save(path);
             }
             catch (Exception ex)
