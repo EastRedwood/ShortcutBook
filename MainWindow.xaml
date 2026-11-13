@@ -116,15 +116,21 @@
                                     <Image x:Name="IconImage" Source="{Binding Icon}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
                                 </Grid>
 
-                                <!-- 이름 · 설명 -->
-                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,8,0">
-                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="{DynamicResource NameSize}" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Text="{Binding Description}" FontSize="{DynamicResource DescSize}" Foreground="{DynamicResource SubText}"
-                                               TextWrapping="Wrap" Margin="0,2,0,0" Visibility="{Binding HasDescription, Converter={StaticResource B2V}}"/>
-                                </StackPanel>
+                                <!-- 이름 · 설명 (빌드 #11: 설명을 이름 오른쪽에 배치. 이전 배치는 커밋 빌드 #10 참고) -->
+                                <Grid Grid.Column="2" VerticalAlignment="Center" Margin="0,0,8,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*" MinWidth="110"/>
+                                        <ColumnDefinition Width="3*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="{DynamicResource NameSize}"
+                                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Description}" FontSize="{DynamicResource DescSize}" Foreground="{DynamicResource SubText}"
+                                               TextWrapping="Wrap" VerticalAlignment="Center" Visibility="{Binding HasDescription, Converter={StaticResource B2V}}"/>
+                                </Grid>
 
                                 <!-- 추가 옵션: 매뉴얼 · 웹 주소 · 메모 (설정한 것만 보인다) -->
-                                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Grid.Column="3" Width="{DynamicResource ExtraWidth}" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                     <Button Style="{StaticResource RowIconButton}" Content="&#xE736;" ToolTip="{Binding ManualTip}"
                                             Visibility="{Binding HasManual, Converter={StaticResource B2V}}" Click="OnManualClick"/>
                                     <Button Style="{StaticResource RowIconButton}" Content="&#xE774;" ToolTip="{Binding WebTip}"
@@ -132,6 +138,7 @@
                                     <Button Style="{StaticResource RowIconButton}" Content="&#xE70B;" ToolTip="{Binding MemoTip}"
                                             Visibility="{Binding HasMemo, Converter={StaticResource B2V}}" Click="OnMemoClick"/>
                                 </StackPanel>
+                                </Border>
 
                                 <Button Grid.Column="4" Style="{StaticResource RowIconButton}" Content="&#xE70F;" ToolTip="{l:T tip_edit}"
                                         Margin="6,0,0,0" Click="OnEditClick"/>

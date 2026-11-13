@@ -23,6 +23,7 @@
         <sys:Double x:Key="DescSize">12</sys:Double>
         <sys:Double x:Key="BtnSize">30</sys:Double>
         <sys:Double x:Key="GlyphSize">15</sys:Double>
+        <sys:Double x:Key="ExtraWidth">96</sys:Double>
         <Thickness x:Key="RowPadding">8,6</Thickness>
 
         <!-- 테두리·밑줄 없는 글 입력 칸 (검색 칸, 메모 보기) -->

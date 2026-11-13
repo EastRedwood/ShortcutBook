@@ -127,6 +127,7 @@ public partial class App : Application
         r["DescSize"] = s.desc;
         r["BtnSize"] = s.btn;
         r["GlyphSize"] = s.glyph;
+        r["ExtraWidth"] = s.btn * 3 + 6; // 매뉴얼·웹·메모 단추 자리(항상 확보): 줄마다 이름/설명 열이 같은 위치에 정렬되게
         r["RowPadding"] = s.pad;
         IconService.Clear();
         ViewChanged?.Invoke();
