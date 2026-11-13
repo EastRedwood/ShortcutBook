@@ -159,7 +159,7 @@ public partial class MainWindow : Window
         if (key == Key.Enter && Keyboard.Modifiers == ModifierKeys.None && !typing)
         {
             if (e.IsRepeat) { e.Handled = true; return; }
-            var vm = List.SelectedItem as ItemVM ?? (Searching ? _view.Cast<ItemVM>().FirstOrDefault() : null);
+            var vm = List.SelectedItem as ItemVM; // 선택이 없으면 아무것도 실행하지 않는다
             if (vm != null) { ShowError(Launcher.Run(vm.Item, this)); e.Handled = true; }
             return;
         }
