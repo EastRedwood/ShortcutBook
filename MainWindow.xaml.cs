@@ -317,6 +317,15 @@ public partial class MainWindow : Window
         List.ScrollIntoView(last);
     }
 
+    void DeleteItem(ItemVM vm)
+    {
+        var r = MessageBox.Show(this, Loc.F("confirm_delete", vm.Name), AppInfo.Name, MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+        if (r != MessageBoxResult.Yes) return;
+        _all.Remove(vm);
+        Save();
+        UpdateEmpty();
+    }
+
     void EditItem(ItemVM vm)
     {
         var dlg = new ItemEditWindow(vm.Item.Clone(), isNew: false) { Owner = this };
@@ -400,6 +409,7 @@ public partial class MainWindow : Window
         menu.Items.Add(Mi("menu_open_location", () => Launcher.OpenLocation(vm.Item), local));
         menu.Items.Add(new Separator());
         menu.Items.Add(Mi("menu_edit", () => EditItem(vm)));
+        menu.Items.Add(Mi("menu_delete", () => DeleteItem(vm)));
         menu.IsOpen = true;
         e.Handled = true;
     }

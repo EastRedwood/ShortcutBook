@@ -121,5 +121,7 @@
   "btn_open_folder": "Open folder",
   "lists_folder_hint": "List files created with 'New > Shortcut list shortcut' are kept here. Change the shortcut's icon in Explorer: shortcut Properties > Change Icon.",
   "btn_ok": "OK",
-  "err_newlink": "Could not create the shortcut.\n{0}"
+  "err_newlink": "Could not create the shortcut.\n{0}",
+
+  "menu_delete": "Delete"
 }
