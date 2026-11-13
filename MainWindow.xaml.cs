@@ -159,21 +159,21 @@ public partial class MainWindow : Window
         if (key == Key.Enter && Keyboard.Modifiers == ModifierKeys.None && !typing)
         {
             if (e.IsRepeat) { e.Handled = true; return; }
-            var vm = List.SelectedItem as ItemVM; // 선택이 없으면 아무것도 실행하지 않는다
-            if (vm != null) { ShowError(Launcher.Run(vm.Item, this)); e.Handled = true; }
+            var sel = SelectedVms(); // 선택이 없으면 아무것도 실행하지 않는다
+            if (sel.Count > 0) { RunAll(sel); e.Handled = true; }
             return;
         }
 
         if (key == Key.Delete && Keyboard.Modifiers == ModifierKeys.None && Keyboard.FocusedElement is not TextBox)
         {
-            if (!e.IsRepeat && List.SelectedItem is ItemVM del) DeleteItem(del); // 확인 창을 거쳐 삭제
+            if (!e.IsRepeat) DeleteItems(SelectedVms()); // 확인 창을 거쳐 삭제
             e.Handled = true;
             return;
         }
 
         if (Hotkey.TryParse(App.Settings.EditHotkey, out var hk, out var hm) && key == hk && Keyboard.Modifiers == hm && !typing)
         {
-            if (!e.IsRepeat && List.SelectedItem is ItemVM sel) EditItem(sel);
+            if (!e.IsRepeat && List.SelectedItems.Count == 1 && List.SelectedItem is ItemVM one) EditItem(one);
             e.Handled = true;
             return;
         }
@@ -361,13 +361,40 @@ public partial class MainWindow : Window
         catch { return t.ToLowerInvariant(); }
     }
 
-    void DeleteItem(ItemVM vm)
+    void DeleteItem(ItemVM vm) => DeleteItems(new List<ItemVM> { vm });
+
+    void DeleteItems(List<ItemVM> vms)
     {
-        var r = MessageBox.Show(this, Loc.F("confirm_delete", vm.Name), AppInfo.Name, MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+        if (vms.Count == 0) return;
+        var msg = vms.Count == 1 ? Loc.F("confirm_delete", vms[0].Name) : Loc.F("confirm_delete_many", vms.Count);
+        var r = MessageBox.Show(this, msg, AppInfo.Name, MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
         if (r != MessageBoxResult.Yes) return;
-        _all.Remove(vm);
+        foreach (var vm in vms) _all.Remove(vm);
         Save();
         UpdateEmpty();
+    }
+
+    void RunAll(List<ItemVM> vms)
+    {
+        foreach (var vm in vms)
+        {
+            var err = Launcher.Run(vm.Item, this);
+            if (!string.IsNullOrEmpty(err)) { ShowError(err); break; }
+        }
+    }
+
+    /// <summary>선택한 항목들을 (현재 순서를 유지한 채) 목록 맨 위로 올린다. 임의 정렬일 때만 의미가 있다.</summary>
+    void MoveToTop(List<ItemVM> vms)
+    {
+        var set = new HashSet<ItemVM>(vms);
+        var ordered = _all.Where(set.Contains).ToList();
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            int from = _all.IndexOf(ordered[i]);
+            if (from != i) _all.Move(from, i);
+        }
+        Save();
+        if (ordered.Count > 0) List.ScrollIntoView(ordered[0]);
     }
 
     void EditItem(ItemVM vm)
@@ -434,11 +461,20 @@ public partial class MainWindow : Window
         if (vm != null) ShowError(Launcher.Run(vm.Item, this));
     }
 
+    /// <summary>여러 개를 선택해 둔 상태에서 선택된 줄을 우클릭하면 선택이 한 줄로 줄지 않게 한다.</summary>
+    void OnListRightDown(object sender, MouseButtonEventArgs e)
+    {
+        var vm = ItemAt(e.GetPosition(List));
+        if (vm != null && List.SelectedItems.Count > 1 && List.SelectedItems.Contains(vm)) e.Handled = true;
+    }
+
     void OnListRightClick(object sender, MouseButtonEventArgs e)
     {
         var vm = ItemAt(e.GetPosition(List));
         if (vm == null) return;
-        List.SelectedItem = vm;
+        if (!List.SelectedItems.Contains(vm)) List.SelectedItem = vm;
+        var sel = SelectedVms();
+        bool custom = _doc.Sort == SortMode.Custom;
 
         var menu = new ContextMenu { PlacementTarget = List };
         MenuItem Mi(string key, Action act, bool enabled = true)
@@ -447,13 +483,25 @@ public partial class MainWindow : Window
             mi.Click += (_, _) => act();
             return mi;
         }
-        var t = Launcher.Expand(vm.Item.Target);
-        bool local = t.Length > 0 && !Launcher.IsUrl(t) && (File.Exists(t) || Directory.Exists(t));
-        menu.Items.Add(Mi("menu_run", () => ShowError(Launcher.Run(vm.Item, this)), t.Length > 0));
-        menu.Items.Add(Mi("menu_open_location", () => Launcher.OpenLocation(vm.Item), local));
-        menu.Items.Add(new Separator());
-        menu.Items.Add(Mi("menu_edit", () => EditItem(vm)));
-        menu.Items.Add(Mi("menu_delete", () => DeleteItem(vm)));
+        if (sel.Count > 1)
+        {
+            // 여러 개를 선택했을 때: 실행 · 맨 위로 · 삭제
+            menu.Items.Add(Mi("menu_run", () => RunAll(sel)));
+            menu.Items.Add(new Separator());
+            menu.Items.Add(Mi("menu_to_top", () => MoveToTop(sel), custom));
+            menu.Items.Add(Mi("menu_delete", () => DeleteItems(sel)));
+        }
+        else
+        {
+            var t = Launcher.Expand(vm.Item.Target);
+            bool local = t.Length > 0 && !Launcher.IsUrl(t) && (File.Exists(t) || Directory.Exists(t));
+            menu.Items.Add(Mi("menu_run", () => ShowError(Launcher.Run(vm.Item, this)), t.Length > 0));
+            menu.Items.Add(Mi("menu_open_location", () => Launcher.OpenLocation(vm.Item), local));
+            menu.Items.Add(new Separator());
+            menu.Items.Add(Mi("menu_to_top", () => MoveToTop(new List<ItemVM> { vm }), custom));
+            menu.Items.Add(Mi("menu_edit", () => EditItem(vm)));
+            menu.Items.Add(Mi("menu_delete", () => DeleteItem(vm)));
+        }
         menu.IsOpen = true;
         e.Handled = true;
     }
@@ -476,6 +524,8 @@ public partial class MainWindow : Window
         _dragVm = vm;
         _dragStart = e.GetPosition(this);
         _dragArmed = true;
+        // 여러 개를 선택해 둔 줄의 손잡이를 누르면 선택이 한 줄로 줄어들지 않게 한다 (함께 끌기 위해)
+        if (List.SelectedItems.Count > 1 && List.SelectedItems.Contains(vm)) e.Handled = true;
     }
 
     void OnHandleUp(object sender, MouseButtonEventArgs e) => _dragArmed = false;
@@ -487,9 +537,11 @@ public partial class MainWindow : Window
         if (Math.Abs(d.X) < SystemParameters.MinimumHorizontalDragDistance && Math.Abs(d.Y) < SystemParameters.MinimumVerticalDragDistance) return;
 
         _dragArmed = false;
-        List.SelectedItem = _dragVm;
+        var sel = SelectedVms();
+        if (!sel.Contains(_dragVm)) { List.SelectedItem = _dragVm; sel = new List<ItemVM> { _dragVm }; }
+        _dragVms = sel;
         _dragSource = this;
-        _dragItem = _dragVm;
+        _dragItems = sel;
         // 끄는 동안 마우스 휠로 (커서 아래 창의) 목록을 스크롤할 수 있게 한다
         using var wheel = new DragWheelHook((pt, delta) =>
         {
@@ -497,15 +549,23 @@ public partial class MainWindow : Window
                 DragWheelHook.ScrollListAt(w.List, pt, delta);
         });
         try { DragDrop.DoDragDrop((DependencyObject)sender, new DataObject(DragFormat, _dragVm.Item.Id), DragDropEffects.Move); }
-        finally { ClearMark(); _dragVm = null; _dragSource = null; _dragItem = null; }
+        finally { ClearMark(); _dragVm = null; _dragVms = new(); _dragSource = null; _dragItems = null; }
     }
 
     // 끌고 있는 항목 (프로그램 안의 다른 창으로도 옮길 수 있게 정적으로 둔다)
     static MainWindow? _dragSource;
-    static ItemVM? _dragItem;
+    static List<ItemVM>? _dragItems;
+    List<ItemVM> _dragVms = new();
 
     /// <summary>다른 창에서 끌어 온 항목이면 그 창을 돌려준다.</summary>
-    MainWindow? ForeignSource => _dragSource != null && _dragSource != this && _dragItem != null ? _dragSource : null;
+    MainWindow? ForeignSource => _dragSource != null && _dragSource != this && _dragItems != null ? _dragSource : null;
+
+    /// <summary>선택된 항목들 (화면 순서)</summary>
+    List<ItemVM> SelectedVms()
+    {
+        var set = new HashSet<ItemVM>(List.SelectedItems.Cast<ItemVM>());
+        return _view.Cast<ItemVM>().Where(set.Contains).ToList();
+    }
 
     /// <summary>다른 창이나 다른 목록에서 옮겨 온 항목을 이 목록 끝에 넣는다.</summary>
     /// <summary>같은 경로·주소 등록 설정을 따른다. 제외되면 false (원래 목록에서 빼지 않는다).</summary>
@@ -534,22 +594,25 @@ public partial class MainWindow : Window
         MessageBox.Show(this, Loc.F("dup_skipped_msg", it.Target), AppInfo.Name, MessageBoxButton.OK, MessageBoxImage.Information);
 
     /// <summary>항목을 이 목록에서 빼낸다 (다른 곳으로 옮긴 뒤).</summary>
-    void RemoveMoved(ItemVM vm)
+    void RemoveMoved(IEnumerable<ItemVM> vms)
     {
-        _all.Remove(vm);
+        foreach (var vm in vms) _all.Remove(vm);
         Save();
         UpdateEmpty();
     }
 
-    /// <summary>다른 창에서 끌어 온 항목을 이 창으로 옮긴다.</summary>
+    /// <summary>다른 창에서 끌어 온 항목들을 이 창으로 옮긴다.</summary>
     void TakeFromOtherWindow()
     {
-        var src = _dragSource; var item = _dragItem;
-        if (src == null || item == null || src == this) return;
+        var src = _dragSource; var items = _dragItems?.ToList();
+        if (src == null || items == null || src == this) return;
         Dispatcher.BeginInvoke(new Action(() =>
         {
-            if (ReceiveItem(item.Item)) src.RemoveMoved(item);
-            else ShowSkipped(item.Item);
+            var moved = new List<ItemVM>();
+            ListItem? skipped = null;
+            foreach (var it in items) { if (ReceiveItem(it.Item)) moved.Add(it); else skipped ??= it.Item; }
+            if (moved.Count > 0) src.RemoveMoved(moved);
+            if (skipped != null) ShowSkipped(skipped);
         }));
     }
 
@@ -563,31 +626,33 @@ public partial class MainWindow : Window
     ItemVM? IntoTarget(Point pos)
     {
         var vm = ItemAt(pos);
-        if (vm == null || vm == _dragVm || !IsListItem(vm)) return null;
+        if (vm == null || _dragVms.Contains(vm) || !IsListItem(vm)) return null;
         var c = (FrameworkElement)List.ItemContainerGenerator.ContainerFromItem(vm);
         double y = e_Y(c, pos);
         return y >= c.ActualHeight * 0.25 && y <= c.ActualHeight * 0.75 ? vm : null;
     }
 
     /// <summary>항목을 다른 목록 파일 안으로 옮긴다. 그 목록이 다른 창에 열려 있으면 그 창에 넣는다.</summary>
-    void MoveIntoList(ItemVM drag, ItemVM listRow)
+    void MoveIntoList(List<ItemVM> drags, ItemVM listRow)
     {
         string path;
         try { path = Path.GetFullPath(Launcher.Expand(listRow.Item.Target)); }
         catch { return; }
         if (path.Equals(ListPath, StringComparison.OrdinalIgnoreCase)) return;
         var w = App.Instance.FindWindow(path, this);
+        var moved = new List<ItemVM>();
+        ListItem? skipped = null;
         if (w != null)
         {
-            if (!w.ReceiveItem(drag.Item)) { ShowSkipped(drag.Item); return; }
+            foreach (var d in drags) { if (w.ReceiveItem(d.Item)) moved.Add(d); else skipped ??= d.Item; }
         }
         else
         {
             try
             {
                 var doc = ListDocument.Load(path);
-                if (!PlaceInto(doc.Items, drag.Item)) { ShowSkipped(drag.Item); return; }
-                doc.Save(path);
+                foreach (var d in drags) { if (PlaceInto(doc.Items, d.Item)) moved.Add(d); else skipped ??= d.Item; }
+                if (moved.Count > 0) doc.Save(path);
             }
             catch (Exception ex)
             {
@@ -596,7 +661,8 @@ public partial class MainWindow : Window
                 return;
             }
         }
-        RemoveMoved(drag);
+        if (moved.Count > 0) RemoveMoved(moved);
+        if (skipped != null) ShowSkipped(skipped);
     }
 
     void ClearMark()
@@ -694,27 +760,33 @@ public partial class MainWindow : Window
         if (e.Data.GetDataPresent(DragFormat))
         {
             if (ForeignSource != null) { ClearMark(); e.Handled = true; TakeFromOtherWindow(); return; }
-            var drag = _dragVm;
-            var into = drag != null && CanReorder ? IntoTarget(e.GetPosition(List)) : null;
+            var drags = _dragVms.ToList();
+            var into = drags.Count > 0 && CanReorder ? IntoTarget(e.GetPosition(List)) : null;
             if (into != null)
             {
                 ClearMark();
                 e.Handled = true;
-                var d = drag!;
-                Dispatcher.BeginInvoke(new Action(() => MoveIntoList(d, into)));
+                Dispatcher.BeginInvoke(new Action(() => MoveIntoList(drags, into)));
                 return;
             }
             var (target, above) = UpdateMark(e.GetPosition(List));
             ClearMark();
             e.Handled = true;
-            if (drag == null || target == null || drag == target || !CanReorder) return;
+            if (drags.Count == 0 || target == null || drags.Contains(target) || !CanReorder) return;
 
-            int from = _all.IndexOf(drag);
-            int to = _all.IndexOf(target) + (above ? 0 : 1);
-            if (from < to) to--;
-            if (from == to) return;
-            _all.Move(from, to);
-            Save();
+            // 끌어 온 항목들(화면 순서 그대로)을 놓은 자리 앞/뒤로 모은다
+            var set = new HashSet<ItemVM>(drags);
+            var final = _all.Where(v => !set.Contains(v)).ToList();
+            int at = final.IndexOf(target) + (above ? 0 : 1);
+            final.InsertRange(at, _all.Where(set.Contains));
+            bool changed = false;
+            for (int i = 0; i < final.Count; i++)
+            {
+                if (ReferenceEquals(_all[i], final[i])) continue;
+                _all.Move(_all.IndexOf(final[i]), i);
+                changed = true;
+            }
+            if (changed) Save();
             return;
         }
         OnWindowDrop(sender, e);

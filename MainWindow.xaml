@@ -59,8 +59,8 @@
         <Grid Grid.Row="1">
             <ListBox x:Name="List" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled" VirtualizingPanel.IsVirtualizing="True"
-                     SelectionMode="Single" AllowDrop="True"
-                     MouseDoubleClick="OnListDoubleClick" PreviewMouseRightButtonUp="OnListRightClick"
+                     SelectionMode="Extended" AllowDrop="True"
+                     MouseDoubleClick="OnListDoubleClick" PreviewMouseRightButtonDown="OnListRightDown" PreviewMouseRightButtonUp="OnListRightClick"
                      DragOver="OnListDragOver" DragLeave="OnListDragLeave" Drop="OnListDrop">
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">

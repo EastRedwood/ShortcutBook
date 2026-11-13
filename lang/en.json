@@ -80,7 +80,7 @@
   "help_title": "Help",
   "help_summary": "Keep your program shortcuts together with names, descriptions and manuals so you remember what each one is.",
   "help_howto_title": "How to use",
-  "help_howto": "• In Explorer, right-click > New > 'Shortcut list' to create a list, then double-click it to open. 'Shortcut list shortcut' keeps the list file in the program folder and creates a shortcut here whose icon you can change.\n• Click + or drop shortcuts and programs onto the window to add them. Dropping several at once adds them all by name without a dialog.\n• Double-click a row or press Enter to run it. Use the pencil button (or the edit shortcut key) to edit or delete.\n• Rows with a manual, web address or memo show an icon on the right.\n• Choose custom order in the sort menu to drag the handle on the left and reorder.\n• Set another list (.sbook) as a target to nest lists like folders. Mouse button 4 / Backspace / Left arrow goes back, button 5 / Right arrow goes forward.\n• Drag the handle onto the middle of another list's row, or onto another window, to move the item into that list.\n• In the edit window, Ctrl+Enter saves and closes right away. You can scroll with the mouse wheel while dragging a handle.",
+  "help_howto": "• In Explorer, right-click > New > 'Shortcut list' to create a list, then double-click it to open. 'Shortcut list shortcut' keeps the list file in the program folder and creates a shortcut here whose icon you can change.\n• Click + or drop shortcuts and programs onto the window to add them. Dropping several at once adds them all by name without a dialog.\n• Double-click a row or press Enter to run it. Use the pencil button (or the edit shortcut key) to edit or delete.\n• Rows with a manual, web address or memo show an icon on the right.\n• Choose custom order in the sort menu to drag the handle on the left and reorder.\n• Set another list (.sbook) as a target to nest lists like folders. Mouse button 4 / Backspace / Left arrow goes back, button 5 / Right arrow goes forward.\n• Select several rows with Shift / Ctrl to run, delete, move to top or drag them together.\n• Drag the handle onto the middle of another list's row, or onto another window, to move the item into that list.\n• In the edit window, Ctrl+Enter saves and closes right away. You can scroll with the mouse wheel while dragging a handle.",
   "help_author": "Author: 이스트",
   "help_contact": "Support: ",
 
@@ -124,6 +124,8 @@
   "err_newlink": "Could not create the shortcut.\n{0}",
 
   "menu_delete": "Delete",
+  "menu_to_top": "Move to top",
+  "confirm_delete_many": "Remove the selected {0} items from this list?\n(The actual programs or files are not deleted.)",
   "btn_yes": "Yes",
   "btn_no": "No",
   "set_name_width": "Name column width",
