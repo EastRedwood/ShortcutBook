@@ -129,8 +129,14 @@ public partial class App : Application
         r["GlyphSize"] = s.glyph;
         r["ExtraWidth"] = s.btn * 3 + 6; // 매뉴얼·웹·메모 단추 자리(항상 확보): 줄마다 이름/설명 열이 같은 위치에 정렬되게
         r["RowPadding"] = s.pad;
+        ApplyNameWidth();
         IconService.Clear();
         ViewChanged?.Invoke();
+    }
+
+    public static void ApplyNameWidth()
+    {
+        Current.Resources["NameColWidth"] = new GridLength(Math.Clamp(Settings.NameWidth, 100, 700));
     }
 
     public static void ChangeLanguage(string code)

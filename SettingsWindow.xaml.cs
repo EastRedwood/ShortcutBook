@@ -25,6 +25,8 @@ public partial class SettingsWindow : Window
         new[] { Theme0, Theme1, Theme2 }[Math.Clamp(App.Settings.Theme, 0, 2)].IsChecked = true;
         (App.Settings.OpenInNewWindow ? OpenNew : OpenReplace).IsChecked = true;
         EditKeyBox.Text = App.Settings.EditHotkey;
+        NameWidthSlider.Value = Math.Clamp(App.Settings.NameWidth, 120, 600);
+        NameWidthText.Text = ((int)NameWidthSlider.Value) + " px";
 
         ShellCheck.IsChecked = App.Settings.RegisterShell;
         UpdateShellStatus();
@@ -32,7 +34,7 @@ public partial class SettingsWindow : Window
         ListsPath.Text = AppInfo.ListsDir;
         ListsPath.ToolTip = AppInfo.ListsDir;
         Loc.Changed += OnLocChanged;
-        Closed += (_, _) => Loc.Changed -= OnLocChanged;
+        Closed += (_, _) => { Loc.Changed -= OnLocChanged; App.Settings.Save(); };
         _loading = false;
     }
 
@@ -50,6 +52,14 @@ public partial class SettingsWindow : Window
             Launcher.ShellOpen(AppInfo.ListsDir);
         }
         catch (Exception ex) { Log.Write("목록 폴더 열기 실패: " + ex.Message); }
+    }
+
+    void OnNameWidthChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (_loading) return;
+        App.Settings.NameWidth = NameWidthSlider.Value;
+        NameWidthText.Text = ((int)NameWidthSlider.Value) + " px";
+        App.ApplyNameWidth();
     }
 
     void OnSizeChecked(object sender, RoutedEventArgs e)

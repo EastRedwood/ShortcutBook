@@ -15,6 +15,19 @@
             <RadioButton x:Name="Theme2" Content="{l:T theme_dark}" GroupName="theme" Checked="OnThemeChecked" Tag="2"/>
         </StackPanel>
 
+        <!-- 이름 칸 너비 -->
+        <TextBlock Text="{l:T set_name_width}" Style="{StaticResource SectionTitle}"/>
+        <Grid Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="56"/>
+            </Grid.ColumnDefinitions>
+            <Slider x:Name="NameWidthSlider" Minimum="120" Maximum="600" SmallChange="10" LargeChange="40" TickFrequency="10"
+                    IsSnapToTickEnabled="True" ValueChanged="OnNameWidthChanged"/>
+            <TextBlock x:Name="NameWidthText" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        </Grid>
+        <TextBlock Text="{l:T name_width_hint}" Foreground="{DynamicResource SubText}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
+
         <!-- 목록 크기 -->
         <TextBlock Text="{l:T set_size}" Style="{StaticResource SectionTitle}"/>
         <WrapPanel Margin="0,8,0,0">

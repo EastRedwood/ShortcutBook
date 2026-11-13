@@ -119,13 +119,13 @@
                                 <!-- 이름 · 설명 (빌드 #11: 설명을 이름 오른쪽에 배치. 이전 배치는 커밋 빌드 #10 참고) -->
                                 <Grid Grid.Column="2" VerticalAlignment="Center" Margin="0,0,8,0">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="2*" MinWidth="110"/>
-                                        <ColumnDefinition Width="3*"/>
+                                        <ColumnDefinition Width="{DynamicResource NameColWidth}"/>
+                                        <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="{DynamicResource NameSize}"
                                                TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                     <TextBlock Grid.Column="1" Text="{Binding Description}" FontSize="{DynamicResource DescSize}" Foreground="{DynamicResource SubText}"
-                                               TextWrapping="Wrap" VerticalAlignment="Center" Visibility="{Binding HasDescription, Converter={StaticResource B2V}}"/>
+                                               TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Left" Visibility="{Binding HasDescription, Converter={StaticResource B2V}}"/>
                                 </Grid>
 
                                 <!-- 추가 옵션: 매뉴얼 · 웹 주소 · 메모 (설정한 것만 보인다) -->

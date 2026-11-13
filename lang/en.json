@@ -125,5 +125,7 @@
 
   "menu_delete": "Delete",
   "btn_yes": "Yes",
-  "btn_no": "No"
+  "btn_no": "No",
+  "set_name_width": "Name column width",
+  "name_width_hint": "Descriptions start right after the name column, left-aligned."
 }

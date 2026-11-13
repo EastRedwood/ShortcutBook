@@ -8,6 +8,8 @@ public sealed class AppSettings
 {
     /// <summary>0 작게 · 1 중간 · 2 크게 · 3 아주 크게</summary>
     public int ViewSize { get; set; } = 1;
+    /// <summary>이름 칸 너비(px). 설명은 이 칸 바로 오른쪽부터 왼쪽 정렬로 보인다.</summary>
+    public double NameWidth { get; set; } = 300;
     public string? Language { get; set; }
     public bool RegisterShell { get; set; } = true;
     /// <summary>0 시스템 · 1 라이트 · 2 다크</summary>

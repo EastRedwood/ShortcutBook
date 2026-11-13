@@ -125,5 +125,7 @@
 
   "menu_delete": "삭제",
   "btn_yes": "예",
-  "btn_no": "아니요"
+  "btn_no": "아니요",
+  "set_name_width": "이름 칸 너비",
+  "name_width_hint": "설명은 이름 칸 바로 오른쪽부터 왼쪽 정렬로 보입니다."
 }
