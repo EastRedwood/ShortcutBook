@@ -1,0 +1,28 @@
+<Window x:Class="ShortcutBook.HelpWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:ShortcutBook"
+        Title="{l:T help_title}" Width="500" SizeToContent="Height"
+        Background="{StaticResource Bg}" Foreground="{StaticResource Text}"
+        FontFamily="Segoe UI, Malgun Gothic" FontSize="13" UseLayoutRounding="True"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="NoResize">
+    <StackPanel Margin="26,18,26,18">
+        <TextBlock Text="{l:T app_title}" FontSize="20" FontWeight="SemiBold"/>
+        <TextBlock Text="{l:T help_summary}" Foreground="{StaticResource SubText}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+
+        <TextBlock Text="{l:T help_howto_title}" Style="{StaticResource SectionTitle}"/>
+        <TextBlock Text="{l:T help_howto}" TextWrapping="Wrap" LineHeight="21" Margin="0,8,0,0"/>
+
+        <Border BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Margin="0,20,0,0" Padding="0,14,0,0">
+            <StackPanel>
+                <TextBlock Text="{l:T help_author}"/>
+                <TextBlock Margin="0,6,0,0">
+                    <Run Text="{l:T help_contact}"/>
+                    <Hyperlink x:Name="MailLink" Click="OnMailClick"><Run x:Name="MailRun"/></Hyperlink>
+                </TextBlock>
+            </StackPanel>
+        </Border>
+
+        <Button Content="{l:T btn_close}" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right" Margin="0,16,0,0" IsCancel="True" IsDefault="True"/>
+    </StackPanel>
+</Window>

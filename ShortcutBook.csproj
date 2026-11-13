@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>ShortcutBook</AssemblyName>
+    <RootNamespace>ShortcutBook</RootNamespace>
+    <PlatformTarget>x64</PlatformTarget>
+    <ApplicationIcon>assets\app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+
+    <!-- 버전은 주.부.빌드번호 이다. 빌드 번호는 .build_number 에서 읽으므로 손으로 고치지 않는다 (window\CLAUDE.md "버전 표시"). -->
+    <VersionMajorMinor>1.0</VersionMajorMinor>
+    <BuildNumber>0</BuildNumber>
+    <BuildNumber Condition="Exists('$(MSBuildProjectDirectory)\.build_number')">$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)\.build_number').Trim())</BuildNumber>
+    <Version>$(VersionMajorMinor).$(BuildNumber)</Version>
+    <Product>ShortcutBook</Product>
+    <AssemblyTitle>ShortcutBook 바로가기 목록</AssemblyTitle>
+    <Description>바로가기를 이름·설명·매뉴얼과 함께 모아 보는 프로그램</Description>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+    <TieredPGO>false</TieredPGO>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 언어 파일은 실행 파일 옆 lang 폴더에 그대로 복사한다 (사용자가 직접 번역 파일을 추가할 수 있다). -->
+    <None Update="lang\*.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- WPF SDK 는 System.IO 를 기본 using 에서 뺀다 -->
+    <Using Include="System.IO" />
+  </ItemGroup>
+</Project>

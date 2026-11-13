@@ -1,0 +1,34 @@
+<Window x:Class="ShortcutBook.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:ShortcutBook"
+        Title="{l:T settings_title}" Width="440" SizeToContent="Height"
+        Background="{StaticResource Bg}" Foreground="{StaticResource Text}"
+        FontFamily="Segoe UI, Malgun Gothic" FontSize="13" UseLayoutRounding="True"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="NoResize">
+    <StackPanel Margin="24,12,24,16">
+        <TextBlock Text="{l:T set_size}" Style="{StaticResource SectionTitle}" Margin="0,8,0,0"/>
+        <StackPanel Margin="0,8,0,0">
+            <RadioButton x:Name="Size0" Content="{l:T size_small}" GroupName="size" Margin="0,2" Checked="OnSizeChecked" Tag="0"/>
+            <RadioButton x:Name="Size1" Content="{l:T size_medium}" GroupName="size" Margin="0,2" Checked="OnSizeChecked" Tag="1"/>
+            <RadioButton x:Name="Size2" Content="{l:T size_large}" GroupName="size" Margin="0,2" Checked="OnSizeChecked" Tag="2"/>
+            <RadioButton x:Name="Size3" Content="{l:T size_xlarge}" GroupName="size" Margin="0,2" Checked="OnSizeChecked" Tag="3"/>
+        </StackPanel>
+
+        <TextBlock Text="{l:T set_language}" Style="{StaticResource SectionTitle}"/>
+        <ComboBox x:Name="LangCombo" Margin="0,8,0,0" Padding="6,4" SelectionChanged="OnLangChanged"/>
+
+        <TextBlock Text="{l:T set_shell}" Style="{StaticResource SectionTitle}"/>
+        <CheckBox x:Name="ShellCheck" Margin="0,8,0,0" Checked="OnShellToggled" Unchecked="OnShellToggled">
+            <TextBlock Text="{l:T set_shell_check}" TextWrapping="Wrap"/>
+        </CheckBox>
+        <TextBlock x:Name="ShellStatus" Foreground="{StaticResource SubText}" FontSize="12" Margin="22,4,0,0" TextWrapping="Wrap"/>
+
+        <Border BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Margin="0,20,0,0" Padding="0,10,0,0">
+            <Grid>
+                <TextBlock x:Name="VersionText" Foreground="{StaticResource SubText}" VerticalAlignment="Center"/>
+                <Button Content="{l:T btn_close}" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right" IsCancel="True" IsDefault="True"/>
+            </Grid>
+        </Border>
+    </StackPanel>
+</Window>
