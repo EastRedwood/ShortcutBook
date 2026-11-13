@@ -28,6 +28,8 @@ public partial class SettingsWindow : Window
         ShellCheck.IsChecked = App.Settings.RegisterShell;
         UpdateShellStatus();
         VersionText.Text = AppInfo.VersionText;
+        ListsPath.Text = AppInfo.ListsDir;
+        ListsPath.ToolTip = AppInfo.ListsDir;
         Loc.Changed += OnLocChanged;
         Closed += (_, _) => Loc.Changed -= OnLocChanged;
         _loading = false;
@@ -37,6 +39,16 @@ public partial class SettingsWindow : Window
     {
         UpdateShellStatus();
         VersionText.Text = AppInfo.VersionText;
+    }
+
+    void OnOpenListsFolder(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Directory.CreateDirectory(AppInfo.ListsDir);
+            Launcher.ShellOpen(AppInfo.ListsDir);
+        }
+        catch (Exception ex) { Log.Write("목록 폴더 열기 실패: " + ex.Message); }
     }
 
     void OnSizeChecked(object sender, RoutedEventArgs e)

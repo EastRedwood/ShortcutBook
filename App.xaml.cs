@@ -61,6 +61,15 @@ public partial class App : Application
             return;
         }
 
+        // 탐색기 "새로 만들기 > 바로가기 목록 바로가기" 가 호출한다: 목록 파일은 프로그램 폴더의 Lists 에, 이 위치에는 바로가기(.lnk)를 만든다.
+        if (args.Length >= 2 && args[0] == "--new-link")
+        {
+            ApplyViewSize();
+            NewLinkFlow.Run(args[1], args.Length >= 4 && args[2] == "--name" ? args[3] : null);
+            Shutdown();
+            return;
+        }
+
         // 빌드 뒤 자동 실행용: 탐색기 연결(.sbook)을 이 실행 파일로 갱신하고 끝낸다 (창·단일 인스턴스 없음).
         if (args.Length > 0 && args[0] == "--register")
         {

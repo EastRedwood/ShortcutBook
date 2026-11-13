@@ -24,9 +24,20 @@ internal static class ShellRegistration
                 && (ext?.GetValue("") as string) == AppInfo.ProgId
                 && shellNew?.GetValue("NullFile") != null
                 && (shellNew.GetValue("ItemName") as string) == Loc.T("shell_new_name")
-                && (prog?.GetValue("") as string) == Loc.T("shell_type_name");
+                && (prog?.GetValue("") as string) == Loc.T("shell_type_name")
+                && LinkIsCurrent(exe);
         }
         catch { return false; }
+    }
+
+    static string LinkCommand(string exe) => "\"" + exe + "\" --new-link \"%1\"";
+
+    static bool LinkIsCurrent(string exe)
+    {
+        using var sn = Registry.CurrentUser.OpenSubKey(ClassesRoot + AppInfo.LinkExtension + @"\ShellNew");
+        using var prog = Registry.CurrentUser.OpenSubKey(ClassesRoot + AppInfo.LinkProgId);
+        return (sn?.GetValue("Command") as string) == LinkCommand(exe)
+            && (prog?.GetValue("") as string) == Loc.T("shell_link_type_name");
     }
 
     public static bool IsRegistered()
@@ -57,6 +68,19 @@ internal static class ShellRegistration
             using var cmd = prog.CreateSubKey(@"shell\open\command");
             cmd.SetValue("", Command(exe));
         }
+        // 새로 만들기 > 바로가기 목록 바로가기: 목록 파일은 프로그램 폴더에 만들고, 이 자리에는 .lnk 를 만든다.
+        using (var ext = Registry.CurrentUser.CreateSubKey(ClassesRoot + AppInfo.LinkExtension))
+        {
+            ext.SetValue("", AppInfo.LinkProgId);
+            using var sn = ext.CreateSubKey("ShellNew");
+            sn.SetValue("Command", LinkCommand(exe));
+        }
+        using (var prog = Registry.CurrentUser.CreateSubKey(ClassesRoot + AppInfo.LinkProgId))
+        {
+            prog.SetValue("", Loc.T("shell_link_type_name"));
+            using var icon = prog.CreateSubKey("DefaultIcon");
+            icon.SetValue("", "\"" + exe + "\",0");
+        }
         Notify();
     }
 
@@ -64,6 +88,8 @@ internal static class ShellRegistration
     {
         try { Registry.CurrentUser.DeleteSubKeyTree(ClassesRoot + AppInfo.Extension, false); } catch { }
         try { Registry.CurrentUser.DeleteSubKeyTree(ClassesRoot + AppInfo.ProgId, false); } catch { }
+        try { Registry.CurrentUser.DeleteSubKeyTree(ClassesRoot + AppInfo.LinkExtension, false); } catch { }
+        try { Registry.CurrentUser.DeleteSubKeyTree(ClassesRoot + AppInfo.LinkProgId, false); } catch { }
         Notify();
     }
 

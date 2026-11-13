@@ -46,6 +46,9 @@ internal static class ThemeService
             if (hwnd == IntPtr.Zero) return;
             int dark = IsDark ? 1 : 0;
             Native.DwmSetWindowAttribute(hwnd, Native.DWMWA_USE_IMMERSIVE_DARK_MODE, ref dark, sizeof(int));
+            // 속성만 바꾸면 창을 클릭(활성화)하기 전까지 옛 색으로 남는다 -> 제목 표시줄을 즉시 다시 그리게 한다.
+            Native.SetWindowPos(hwnd, IntPtr.Zero, 0, 0, 0, 0, 0x37 /* NOSIZE|NOMOVE|NOZORDER|NOACTIVATE|FRAMECHANGED */);
+            Native.RedrawWindow(hwnd, IntPtr.Zero, IntPtr.Zero, 0x501 /* INVALIDATE|FRAME|UPDATENOW */);
         }
         catch (Exception ex) { Log.Write("제목 표시줄 테마 실패: " + ex.Message); }
     }

@@ -176,9 +176,11 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (key == Key.Back && Keyboard.Modifiers == ModifierKeys.None && Keyboard.FocusedElement is not TextBox)
+        if (Keyboard.Modifiers == ModifierKeys.None && Keyboard.FocusedElement is not TextBox)
         {
-            if (_back.Count > 0) { GoBack(); e.Handled = true; }
+            // Backspace / 왼쪽 방향키 = 이전 목록, 오른쪽 방향키 = 다시 앞으로
+            if ((key == Key.Back || key == Key.Left) && _back.Count > 0) { GoBack(); e.Handled = true; }
+            else if (key == Key.Right && _fwd.Count > 0) { GoForward(); e.Handled = true; }
         }
     }
 

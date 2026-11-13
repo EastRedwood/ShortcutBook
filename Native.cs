@@ -43,6 +43,9 @@ internal static class Native
     [DllImport("gdi32.dll")] public static extern IntPtr SelectObject(IntPtr hdc, IntPtr obj);
     [DllImport("gdi32.dll")] public static extern bool DeleteDC(IntPtr hdc);
 
+    [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
+    [DllImport("user32.dll")] public static extern bool RedrawWindow(IntPtr hwnd, IntPtr rect, IntPtr rgn, uint flags);
+
     public const int ASFW_ANY = -1;
     public const int SHCNE_ASSOCCHANGED = 0x08000000;
 }

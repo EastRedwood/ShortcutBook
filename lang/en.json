@@ -80,7 +80,7 @@
   "help_title": "Help",
   "help_summary": "Keep your program shortcuts together with names, descriptions and manuals so you remember what each one is.",
   "help_howto_title": "How to use",
-  "help_howto": "• In Explorer, right-click > New > 'Shortcut list' to create a list, then double-click it to open.\n• Click + or drop shortcuts and programs onto the window to add them. Dropping several at once adds them all by name without a dialog.\n• Double-click a row or press Enter to run it. Use the pencil button (or the edit shortcut key) to edit or delete.\n• Rows with a manual, web address or memo show an icon on the right.\n• Choose custom order in the sort menu to drag the handle on the left and reorder.\n• Set another list (.sbook) as a target to nest lists like folders. Mouse button 4 / Backspace goes back, button 5 goes forward.",
+  "help_howto": "• In Explorer, right-click > New > 'Shortcut list' to create a list, then double-click it to open. 'Shortcut list shortcut' keeps the list file in the program folder and creates a shortcut here whose icon you can change.\n• Click + or drop shortcuts and programs onto the window to add them. Dropping several at once adds them all by name without a dialog.\n• Double-click a row or press Enter to run it. Use the pencil button (or the edit shortcut key) to edit or delete.\n• Rows with a manual, web address or memo show an icon on the right.\n• Choose custom order in the sort menu to drag the handle on the left and reorder.\n• Set another list (.sbook) as a target to nest lists like folders. Mouse button 4 / Backspace / Left arrow goes back, button 5 / Right arrow goes forward.",
   "help_author": "Author: 이스트",
   "help_contact": "Support: ",
 
@@ -110,8 +110,18 @@
   "set_open_mode": "When opening another list from inside a list",
   "open_replace": "Replace the current window (default)",
   "open_new": "Open in a new window",
-  "open_hint": "When replacing, mouse button 4 or Backspace goes back to the previous list and button 5 goes forward again.",
+  "open_hint": "When replacing, mouse button 4 / Backspace / Left arrow goes back to the previous list and button 5 / Right arrow goes forward again.",
   "set_edit_key": "Edit shortcut key",
   "edit_key_tip": "Focus this box and press the key you want",
-  "edit_key_hint": "Select this box and press a key to change it. It opens the edit window of the selected item. (Without a modifier key, only F1-F12)"
+  "edit_key_hint": "Select this box and press a key to change it. It opens the edit window of the selected item. (Without a modifier key, only F1-F12)",
+
+  "shell_link_type_name": "Shortcut list shortcut",
+  "newlink_title": "Create a shortcut list shortcut",
+  "newlink_prompt": "Enter a name for the list.\nThe list file is saved in the Lists folder of the program, and a shortcut that opens it is created here.",
+  "newlink_default": "New shortcut list",
+  "set_lists_folder": "List files folder",
+  "btn_open_folder": "Open folder",
+  "lists_folder_hint": "List files created with 'New > Shortcut list shortcut' are kept here. Change the shortcut's icon in Explorer: shortcut Properties > Change Icon.",
+  "btn_ok": "OK",
+  "err_newlink": "Could not create the shortcut.\n{0}"
 }

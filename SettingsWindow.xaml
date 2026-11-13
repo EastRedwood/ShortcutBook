@@ -57,6 +57,18 @@
         </CheckBox>
         <TextBlock x:Name="ShellStatus" Foreground="{DynamicResource SubText}" FontSize="12" Margin="22,4,0,0" TextWrapping="Wrap"/>
 
+        <!-- 목록 파일 폴더 -->
+        <TextBlock Text="{l:T set_lists_folder}" Style="{StaticResource SectionTitle}"/>
+        <Grid Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="ListsPath" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SubText}"/>
+            <Button Grid.Column="1" Content="{l:T btn_open_folder}" Style="{StaticResource SecondaryButton}" MinWidth="0" Margin="8,0,0,0" Click="OnOpenListsFolder"/>
+        </Grid>
+        <TextBlock Text="{l:T lists_folder_hint}" Foreground="{DynamicResource SubText}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
+
         <Border BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Margin="0,20,0,0" Padding="0,10,0,0">
             <Grid>
                 <TextBlock x:Name="VersionText" Foreground="{DynamicResource SubText}" VerticalAlignment="Center"/>
