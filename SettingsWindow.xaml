@@ -100,10 +100,5 @@
         <Border Height="16"/>
     </StackPanel>
     </ScrollViewer>
-    <Border Grid.Row="1" BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Margin="24,0,24,16" Padding="0,10,0,0">
-        <Grid>
-            <TextBlock x:Name="VersionText" Foreground="{DynamicResource SubText}" VerticalAlignment="Center"/>
-        </Grid>
-    </Border>
     </Grid>
 </Window>

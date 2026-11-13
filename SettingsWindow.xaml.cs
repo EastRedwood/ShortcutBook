@@ -33,7 +33,6 @@ public partial class SettingsWindow : Window
 
         ShellCheck.IsChecked = App.Settings.RegisterShell;
         UpdateShellStatus();
-        VersionText.Text = AppInfo.VersionText;
         ListsPath.Text = AppInfo.ListsDir;
         ListsPath.ToolTip = AppInfo.ListsDir;
         Loc.Changed += OnLocChanged;
@@ -44,7 +43,6 @@ public partial class SettingsWindow : Window
     void OnLocChanged()
     {
         UpdateShellStatus();
-        VersionText.Text = AppInfo.VersionText;
     }
 
     void OnOpenListsFolder(object sender, RoutedEventArgs e)

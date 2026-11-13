@@ -8,6 +8,7 @@
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="NoResize">
     <StackPanel Margin="26,18,26,18">
         <TextBlock Text="{l:T app_title}" FontSize="20" FontWeight="SemiBold"/>
+        <TextBlock x:Name="VersionText" Foreground="{DynamicResource SubText}" Margin="0,4,0,0"/>
         <TextBlock Text="{l:T help_summary}" Foreground="{DynamicResource SubText}" TextWrapping="Wrap" Margin="0,6,0,0"/>
 
         <TextBlock Text="{l:T help_howto_title}" Style="{StaticResource SectionTitle}"/>

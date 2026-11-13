@@ -8,6 +8,7 @@ public partial class HelpWindow : Window
     {
         InitializeComponent();
         ThemeService.Hook(this);
+        VersionText.Text = AppInfo.VersionText;
         MailRun.Text = AppInfo.AuthorMail;
     }
 
