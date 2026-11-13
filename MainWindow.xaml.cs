@@ -275,7 +275,8 @@ public partial class MainWindow : Window
 
     void OnSort(object sender, RoutedEventArgs e)
     {
-        var menu = new ContextMenu { PlacementTarget = SortBtn, Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom };
+        // 메뉴는 PlacementTarget 의 글꼴을 물려받는다. 정렬 단추는 아이콘 글꼴이라 글자가 깨지므로 창의 글꼴을 직접 지정한다.
+        var menu = new ContextMenu { PlacementTarget = SortBtn, Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom, FontFamily = FontFamily, FontSize = FontSize };
         void Add(SortMode mode, string key)
         {
             var mi = new MenuItem { Header = Loc.T(key), IsCheckable = true, IsChecked = _doc.Sort == mode };
