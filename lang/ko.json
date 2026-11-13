@@ -47,7 +47,7 @@
   "f_icon": "아이콘 파일 (비우면 대상의 아이콘)",
   "btn_default_icon": "기본값",
   "sec_extra": "추가 옵션",
-  "f_manual": "매뉴얼 파일 (또는 주소)",
+  "f_manual": "매뉴얼 파일 (또는 웹 매뉴얼 주소)",
   "f_web": "웹 주소",
   "f_memo": "메모",
   "btn_save": "저장",

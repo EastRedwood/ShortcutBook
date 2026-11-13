@@ -47,7 +47,7 @@
   "f_icon": "Icon file (leave empty to use the target's icon)",
   "btn_default_icon": "Default",
   "sec_extra": "Extra options",
-  "f_manual": "Manual file (or address)",
+  "f_manual": "Manual file (or web manual address)",
   "f_web": "Web address",
   "f_memo": "Memo",
   "btn_save": "Save",
