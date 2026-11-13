@@ -24,7 +24,7 @@ public partial class SettingsWindow : Window
         int idx = _langs.FindIndex(l => l.Code.Equals(Loc.Instance.Code, StringComparison.OrdinalIgnoreCase));
         LangCombo.SelectedIndex = Math.Max(0, idx);
 
-        new[] { Theme0, Theme1, Theme2 }[Math.Clamp(App.Settings.Theme, 0, 2)].IsChecked = true;
+        new[] { Theme0, Theme1, Theme2, Theme3 }[Math.Clamp(App.Settings.Theme, 0, 3)].IsChecked = true;
         (App.Settings.OpenInNewWindow ? OpenNew : OpenReplace).IsChecked = true;
         new[] { Dup0, Dup1, Dup2 }[Math.Clamp(App.Settings.DuplicateMode, 0, 2)].IsChecked = true;
         EditKeyBox.Text = App.Settings.EditHotkey;

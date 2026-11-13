@@ -4,7 +4,7 @@ using Microsoft.Win32;
 
 namespace ShortcutBook;
 
-/// <summary>시스템 · 라이트 · 다크 테마. 기본 컨트롤은 .NET 9 의 Fluent ThemeMode 가, 이 프로그램의 색은 아래 팔레트가 바꾼다.</summary>
+/// <summary>시스템 · 라이트 · 다크 · 회색 테마. 기본 컨트롤은 .NET 9 의 Fluent ThemeMode 가, 이 프로그램의 색은 아래 팔레트가 바꾼다.</summary>
 internal static class ThemeService
 {
     static readonly Dictionary<string, string> Light = new()
@@ -12,6 +12,14 @@ internal static class ThemeService
         ["Bg"] = "#FFFFFF", ["PanelBg"] = "#F5F6F8", ["Line"] = "#E3E5E9", ["LineStrong"] = "#C9CDD4",
         ["Text"] = "#1F2328", ["SubText"] = "#6B7280", ["Accent"] = "#2F6FED", ["AccentSoft"] = "#E8F0FE",
         ["Hover"] = "#EEF0F3", ["Danger"] = "#D13438",
+    };
+
+    // 회색: 라이트보다 한 단계 진한 회색 (앞뒤날씨 WeatherBoard 의 회색 테마 값을 따랐다: 바탕 #BFC5CF · 카드 #D9DDE4 · 테두리 #A9B1BE · 흐린 글자 #566170 ...)
+    static readonly Dictionary<string, string> Gray = new()
+    {
+        ["Bg"] = "#D9DDE4", ["PanelBg"] = "#BFC5CF", ["Line"] = "#A9B1BE", ["LineStrong"] = "#97A1B0",
+        ["Text"] = "#1B2430", ["SubText"] = "#566170", ["Accent"] = "#1F6AD6", ["AccentSoft"] = "#BFD3F0",
+        ["Hover"] = "#C9CED7", ["Danger"] = "#D63A2D",
     };
 
     static readonly Dictionary<string, string> Dark = new()
@@ -62,16 +70,16 @@ internal static class ThemeService
         catch (Exception ex) { Log.Write("제목 표시줄 테마 실패: " + ex.Message); }
     }
 
-    /// <summary>0 시스템 · 1 라이트 · 2 다크</summary>
+    /// <summary>0 시스템 · 1 라이트 · 2 다크 · 3 회색(라이트 계열)</summary>
     public static void Apply()
     {
         var app = Application.Current;
         int mode = App.Settings.Theme;
         IsDark = mode == 2 || (mode == 0 && SystemUsesDark());
 
-        app.ThemeMode = mode switch { 1 => ThemeMode.Light, 2 => ThemeMode.Dark, _ => ThemeMode.System };
+        app.ThemeMode = mode switch { 1 or 3 => ThemeMode.Light, 2 => ThemeMode.Dark, _ => ThemeMode.System };
 
-        foreach (var kv in IsDark ? Dark : Light)
+        foreach (var kv in IsDark ? Dark : mode == 3 ? Gray : Light)
         {
             var b = new SolidColorBrush((Color)ColorConverter.ConvertFromString(kv.Value));
             b.Freeze();

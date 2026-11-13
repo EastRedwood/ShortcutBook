@@ -14,7 +14,7 @@ public sealed class AppSettings
     public int DuplicateMode { get; set; }
     public string? Language { get; set; }
     public bool RegisterShell { get; set; } = true;
-    /// <summary>0 시스템 · 1 라이트 · 2 다크</summary>
+    /// <summary>0 시스템 · 1 라이트 · 2 다크 · 3 회색</summary>
     public int Theme { get; set; }
     /// <summary>목록 안에서 다른 목록을 열 때 새 창으로 열지 (기본: 현재 창을 대체)</summary>
     public bool OpenInNewWindow { get; set; }

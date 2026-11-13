@@ -101,6 +101,7 @@
   "theme_system": "System",
   "theme_light": "Light",
   "theme_dark": "Dark",
+  "theme_gray": "Gray",
   "set_open_mode": "When opening another list from inside a list",
   "open_replace": "Replace the current window (default)",
   "open_new": "Open in a new window",

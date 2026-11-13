@@ -15,11 +15,12 @@
     <StackPanel Margin="24,12,24,0">
         <!-- 테마 -->
         <TextBlock Text="{l:T set_theme}" Style="{StaticResource SectionTitle}" Margin="0,8,0,0"/>
-        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+        <WrapPanel Margin="0,8,0,0">
             <RadioButton x:Name="Theme0" Content="{l:T theme_system}" GroupName="theme" Margin="0,0,18,0" Checked="OnThemeChecked" Tag="0"/>
             <RadioButton x:Name="Theme1" Content="{l:T theme_light}" GroupName="theme" Margin="0,0,18,0" Checked="OnThemeChecked" Tag="1"/>
-            <RadioButton x:Name="Theme2" Content="{l:T theme_dark}" GroupName="theme" Checked="OnThemeChecked" Tag="2"/>
-        </StackPanel>
+            <RadioButton x:Name="Theme2" Content="{l:T theme_dark}" GroupName="theme" Margin="0,0,18,0" Checked="OnThemeChecked" Tag="2"/>
+            <RadioButton x:Name="Theme3" Content="{l:T theme_gray}" GroupName="theme" Checked="OnThemeChecked" Tag="3"/>
+        </WrapPanel>
 
         <!-- 이름 칸 너비 -->
         <TextBlock Text="{l:T set_name_width}" Style="{StaticResource SectionTitle}"/>
