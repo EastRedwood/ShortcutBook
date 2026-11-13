@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -33,11 +32,7 @@ sealed class DragWheelHook : IDisposable
     {
         _onWheel = onWheel;
         _proc = Proc;
-        try
-        {
-            using var p = Process.GetCurrentProcess();
-            _hook = SetWindowsHookEx(WH_MOUSE_LL, _proc, GetModuleHandle(p.MainModule?.ModuleName), 0);
-        }
+        try { _hook = SetWindowsHookEx(WH_MOUSE_LL, _proc, GetModuleHandle(null), 0); }
         catch (Exception ex) { Log.Write("휠 훅 설치 실패: " + ex.Message); }
     }
 

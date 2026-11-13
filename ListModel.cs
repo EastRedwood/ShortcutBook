@@ -107,19 +107,6 @@ public sealed class ItemVM : INotifyPropertyChanged
         }
     }
 
-    public string RowTip
-    {
-        get
-        {
-            var t = Item.Target;
-            if (string.IsNullOrWhiteSpace(t)) return Loc.T("tip_no_target");
-            var s = t;
-            if (!string.IsNullOrWhiteSpace(Item.Arguments)) s += " " + Item.Arguments;
-            if (Missing) s += "\n" + Loc.T("tip_missing");
-            return s;
-        }
-    }
-
     public bool Missing { get { EnsureIcon(); return _missing; } }
 
     public ImageSource? Icon { get { EnsureIcon(); return _icon; } }
@@ -166,20 +153,15 @@ public sealed class ItemVM : INotifyPropertyChanged
 /// <summary>Segoe MDL2 Assets 글리프</summary>
 public static class G
 {
-    public const string Search = "";
     public const string Add = "";
     public const string Settings = "";
     public const string Sort = "";
-    public const string Help = "";
-    public const string Edit = "";
     public const string Globe = "";
     public const string Manual = "";
     public const string Memo = "";
-    public const string Grip = "";
     public const string Clear = "";
     public const string Folder = "";
     public const string File = "";
-    public const string Check = "";
 }
 
 public sealed class NameComparer : System.Collections.IComparer

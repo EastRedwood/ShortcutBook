@@ -91,7 +91,7 @@ internal static class ShortcutImport
                 it.Description = desc.Trim();
 
             icon = icon.Trim();
-            if (icon.Length > 0 && !icon.StartsWith(",") && !SamePathAsTarget(icon, it.Target))
+            if (icon.Length > 0 && !icon.StartsWith(',') && !SamePathAsTarget(icon, it.Target))
                 it.IconPath = icon;
         }
         finally

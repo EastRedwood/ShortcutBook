@@ -55,7 +55,6 @@
   "btn_save": "Save",
   "btn_cancel": "Cancel",
   "btn_delete": "Delete",
-  "btn_close": "Close",
   "confirm_delete": "Remove '{0}' from this list?\n(The actual program or file is not deleted.)",
 
   "filter_all": "All files",

@@ -55,7 +55,6 @@
   "btn_save": "저장",
   "btn_cancel": "취소",
   "btn_delete": "삭제",
-  "btn_close": "닫기",
   "confirm_delete": "'{0}' 항목을 목록에서 삭제하시겠습니까?\n(실제 프로그램이나 파일은 지워지지 않습니다.)",
 
   "filter_all": "모든 파일",

@@ -168,7 +168,7 @@ public partial class App : Application
     {
         foreach (var a in args)
         {
-            if (a.StartsWith("--") || string.IsNullOrWhiteSpace(a)) continue;
+            if (a.StartsWith("--", StringComparison.Ordinal) || string.IsNullOrWhiteSpace(a)) continue;
             OpenList(a);
         }
         if (_lists.Count == 0) ShowStart();
@@ -251,7 +251,7 @@ public partial class App : Application
         var list = new List<string>();
         foreach (var a in args)
         {
-            if (a.StartsWith("--")) continue;
+            if (a.StartsWith("--", StringComparison.Ordinal)) continue;
             try { list.Add("OPEN|" + Path.GetFullPath(a)); } catch { }
         }
         if (list.Count == 0) list.Add("SHOW");
@@ -308,7 +308,7 @@ public partial class App : Application
         foreach (var l in lines)
         {
             if (l == "EXIT") { Shutdown(); return; }
-            if (l.StartsWith("OPEN|")) { OpenList(l[5..]); opened = true; }
+            if (l.StartsWith("OPEN|", StringComparison.Ordinal)) { OpenList(l[5..]); opened = true; }
         }
         if (!opened)
         {
