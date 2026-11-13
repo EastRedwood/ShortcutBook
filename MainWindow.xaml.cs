@@ -488,8 +488,90 @@ public partial class MainWindow : Window
 
         _dragArmed = false;
         List.SelectedItem = _dragVm;
+        _dragSource = this;
+        _dragItem = _dragVm;
         try { DragDrop.DoDragDrop((DependencyObject)sender, new DataObject(DragFormat, _dragVm.Item.Id), DragDropEffects.Move); }
-        finally { ClearMark(); _dragVm = null; }
+        finally { ClearMark(); _dragVm = null; _dragSource = null; _dragItem = null; }
+    }
+
+    // 끌고 있는 항목 (프로그램 안의 다른 창으로도 옮길 수 있게 정적으로 둔다)
+    static MainWindow? _dragSource;
+    static ItemVM? _dragItem;
+
+    /// <summary>다른 창에서 끌어 온 항목이면 그 창을 돌려준다.</summary>
+    MainWindow? ForeignSource => _dragSource != null && _dragSource != this && _dragItem != null ? _dragSource : null;
+
+    /// <summary>다른 창이나 다른 목록에서 옮겨 온 항목을 이 목록 끝에 넣는다.</summary>
+    void ReceiveItem(ListItem it)
+    {
+        var vm = new ItemVM(it) { CanReorder = CanReorder };
+        _all.Add(vm);
+        Save();
+        UpdateEmpty();
+        List.ScrollIntoView(vm);
+    }
+
+    /// <summary>항목을 이 목록에서 빼낸다 (다른 곳으로 옮긴 뒤).</summary>
+    void RemoveMoved(ItemVM vm)
+    {
+        _all.Remove(vm);
+        Save();
+        UpdateEmpty();
+    }
+
+    /// <summary>다른 창에서 끌어 온 항목을 이 창으로 옮긴다.</summary>
+    void TakeFromOtherWindow()
+    {
+        var src = _dragSource; var item = _dragItem;
+        if (src == null || item == null || src == this) return;
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            ReceiveItem(item.Item);
+            src.RemoveMoved(item);
+        }));
+    }
+
+    bool IsListItem(ItemVM vm)
+    {
+        var t = Launcher.Expand(vm.Item.Target);
+        return t.EndsWith(AppInfo.Extension, StringComparison.OrdinalIgnoreCase) && File.Exists(t);
+    }
+
+    /// <summary>끌고 있는 위치가 "다른 목록" 줄의 가운데면 그 줄 (그 목록 안으로 옮기기).</summary>
+    ItemVM? IntoTarget(Point pos)
+    {
+        var vm = ItemAt(pos);
+        if (vm == null || vm == _dragVm || !IsListItem(vm)) return null;
+        var c = (FrameworkElement)List.ItemContainerGenerator.ContainerFromItem(vm);
+        double y = e_Y(c, pos);
+        return y >= c.ActualHeight * 0.25 && y <= c.ActualHeight * 0.75 ? vm : null;
+    }
+
+    /// <summary>항목을 다른 목록 파일 안으로 옮긴다. 그 목록이 다른 창에 열려 있으면 그 창에 넣는다.</summary>
+    void MoveIntoList(ItemVM drag, ItemVM listRow)
+    {
+        string path;
+        try { path = Path.GetFullPath(Launcher.Expand(listRow.Item.Target)); }
+        catch { return; }
+        if (path.Equals(ListPath, StringComparison.OrdinalIgnoreCase)) return;
+        var w = App.Instance.FindWindow(path, this);
+        if (w != null) w.ReceiveItem(drag.Item);
+        else
+        {
+            try
+            {
+                var doc = ListDocument.Load(path);
+                doc.Items.Add(drag.Item);
+                doc.Save(path);
+            }
+            catch (Exception ex)
+            {
+                Log.Write("다른 목록으로 옮기기 실패 " + path + ": " + ex);
+                ShowError(Loc.F("err_save_list", ex.Message));
+                return;
+            }
+        }
+        RemoveMoved(drag);
     }
 
     void ClearMark()
@@ -562,8 +644,16 @@ public partial class MainWindow : Window
     {
         if (e.Data.GetDataPresent(DragFormat))
         {
+            if (ForeignSource != null) { ClearMark(); e.Effects = DragDropEffects.Move; e.Handled = true; return; }
             if (!CanReorder) { e.Effects = DragDropEffects.None; e.Handled = true; return; }
             var pos = e.GetPosition(List);
+            var into = IntoTarget(pos);
+            if (into != null)
+            {
+                if (_markVm != into) ClearMark();
+                _markVm = into; into.DropMark = 3;
+                e.Effects = DragDropEffects.Move; e.Handled = true; return;
+            }
             UpdateMark(pos);
             AutoScroll(pos);
             e.Effects = DragDropEffects.Move;
@@ -578,7 +668,17 @@ public partial class MainWindow : Window
     {
         if (e.Data.GetDataPresent(DragFormat))
         {
+            if (ForeignSource != null) { ClearMark(); e.Handled = true; TakeFromOtherWindow(); return; }
             var drag = _dragVm;
+            var into = drag != null && CanReorder ? IntoTarget(e.GetPosition(List)) : null;
+            if (into != null)
+            {
+                ClearMark();
+                e.Handled = true;
+                var d = drag!;
+                Dispatcher.BeginInvoke(new Action(() => MoveIntoList(d, into)));
+                return;
+            }
             var (target, above) = UpdateMark(e.GetPosition(List));
             ClearMark();
             e.Handled = true;
@@ -599,14 +699,23 @@ public partial class MainWindow : Window
 
     void OnWindowDragOver(object sender, DragEventArgs e)
     {
-        if (e.Data.GetDataPresent(DragFormat)) return; // 목록 안의 순서 변경은 목록이 처리한다
+        if (e.Data.GetDataPresent(DragFormat))
+        {
+            // 목록 안의 순서 변경은 목록이 처리한다. 다른 창에서 끌어 온 항목은 어디에 놓아도 이 창으로 옮긴다.
+            if (ForeignSource != null) { e.Effects = DragDropEffects.Move; e.Handled = true; }
+            return;
+        }
         e.Effects = HasExternal(e.Data) ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
     }
 
     void OnWindowDrop(object sender, DragEventArgs e)
     {
-        if (e.Data.GetDataPresent(DragFormat)) return;
+        if (e.Data.GetDataPresent(DragFormat))
+        {
+            if (ForeignSource != null) { e.Handled = true; TakeFromOtherWindow(); }
+            return;
+        }
         e.Handled = true;
 
         if (e.Data.GetDataPresent(DataFormats.FileDrop) && e.Data.GetData(DataFormats.FileDrop) is string[] files)

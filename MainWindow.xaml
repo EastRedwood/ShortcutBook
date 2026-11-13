@@ -148,6 +148,10 @@
                             <DataTrigger Binding="{Binding DropMark}" Value="1">
                                 <Setter TargetName="MarkTop" Property="Visibility" Value="Visible"/>
                             </DataTrigger>
+                            <DataTrigger Binding="{Binding DropMark}" Value="3">
+                                <Setter TargetName="MarkTop" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="MarkBottom" Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
                             <DataTrigger Binding="{Binding DropMark}" Value="2">
                                 <Setter TargetName="MarkBottom" Property="Visibility" Value="Visible"/>
                             </DataTrigger>

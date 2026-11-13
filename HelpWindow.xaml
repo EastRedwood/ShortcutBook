@@ -23,7 +23,5 @@
                 </TextBlock>
             </StackPanel>
         </Border>
-
-        <Button Content="{l:T btn_close}" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right" Margin="0,16,0,0" IsCancel="True" IsDefault="True"/>
     </StackPanel>
 </Window>
