@@ -18,6 +18,7 @@ public partial class ItemEditWindow : Window
         _item = item;
         _isNew = isNew;
         InitializeComponent();
+        ThemeService.Hook(this);
         MaxHeight = SystemParameters.WorkArea.Height * 0.94;
 
         WindowCombo.Items.Add(Loc.T("win_normal"));

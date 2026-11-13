@@ -27,7 +27,6 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <Border Background="{DynamicResource Bg}" BorderBrush="{DynamicResource LineStrong}" BorderThickness="1" CornerRadius="6" Height="34" Margin="0,0,8,0">
@@ -50,10 +49,9 @@
 
                 <Button x:Name="AddBtn" Grid.Column="1" Style="{StaticResource IconButton}" Content="&#xE710;" ToolTip="{l:T tip_add}"
                         Click="OnAdd" AllowDrop="True" DragOver="OnWindowDragOver" Drop="OnWindowDrop"/>
-                <Button x:Name="ListSetBtn" Grid.Column="2" Style="{StaticResource IconButton}" Content="&#xE8FD;" ToolTip="{l:T tip_listset}" Click="OnListSettings"/>
-                <Button x:Name="SettingsBtn" Grid.Column="3" Style="{StaticResource IconButton}" Content="&#xE713;" ToolTip="{l:T tip_settings}" Click="OnSettings"/>
-                <Button x:Name="SortBtn" Grid.Column="4" Style="{StaticResource IconButton}" Content="&#xE8CB;" ToolTip="{l:T tip_sort}" Click="OnSort"/>
-                <Button x:Name="HelpBtn" Grid.Column="5" Style="{StaticResource IconButton}" Content="&#xE897;" ToolTip="{l:T tip_help}" Click="OnHelp"/>
+                <Button x:Name="SettingsBtn" Grid.Column="2" Style="{StaticResource IconButton}" Content="&#xE713;" ToolTip="{l:T tip_settings}" Click="OnSettings"/>
+                <Button x:Name="SortBtn" Grid.Column="3" Style="{StaticResource IconButton}" Content="&#xE8CB;" ToolTip="{l:T tip_sort}" Click="OnSort"/>
+                <Button x:Name="HelpBtn" Grid.Column="4" Style="{StaticResource IconButton}" Content="&#xE897;" ToolTip="{l:T tip_help}" Click="OnHelp"/>
             </Grid>
         </Border>
 

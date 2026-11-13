@@ -7,6 +7,7 @@ public partial class HelpWindow : Window
     public HelpWindow()
     {
         InitializeComponent();
+        ThemeService.Hook(this);
         MailRun.Text = AppInfo.AuthorMail;
     }
 

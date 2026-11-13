@@ -99,10 +99,8 @@
   "err_shell": "Could not change the Explorer integration.\n{0}",
   "err_unhandled": "An unexpected error occurred.\n{0}",
 
-  "tip_listset": "List settings (icon of this list)",
-  "listset_title": "List settings",
-  "listset_icon": "List icon",
-  "listset_icon_hint": "Used as the window icon and as the icon of items that point to this list inside other lists. The file icon in Explorer does not change.",
+
+
   "set_theme": "Theme",
   "theme_system": "System",
   "theme_light": "Light",

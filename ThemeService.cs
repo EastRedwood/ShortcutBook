@@ -38,6 +38,12 @@ internal static class ThemeService
     /// 제목 표시줄(비클라이언트 영역)을 테마에 맞춘다. ThemeMode 만으로는 제목 표시줄이 바뀌지 않아서
     /// 창마다 DWM 속성을 직접 지정해야 한다 (window\CLAUDE.md "다크 테마").
     /// </summary>
+    /// <summary>
+    /// 창 생성자에서 한 번 부른다. 창이 화면에 처음 그려지기 전(SourceInitialized)에 제목 표시줄 테마를 적용해야
+    /// 열자마자 어둡다. Loaded 이후에 지정하면 창을 클릭하기 전까지 흰색으로 남는다 (WeatherBoard 와 같은 방식).
+    /// </summary>
+    public static void Hook(Window w) => w.SourceInitialized += (_, _) => ApplyTitleBar(w);
+
     public static void ApplyTitleBar(Window w)
     {
         try
@@ -45,7 +51,10 @@ internal static class ThemeService
             var hwnd = new System.Windows.Interop.WindowInteropHelper(w).Handle;
             if (hwnd == IntPtr.Zero) return;
             int dark = IsDark ? 1 : 0;
-            Native.DwmSetWindowAttribute(hwnd, Native.DWMWA_USE_IMMERSIVE_DARK_MODE, ref dark, sizeof(int));
+            // Windows 10 초기 빌드는 속성 번호가 19 이다
+            if (Native.DwmSetWindowAttribute(hwnd, Native.DWMWA_USE_IMMERSIVE_DARK_MODE, ref dark, sizeof(int)) != 0)
+                Native.DwmSetWindowAttribute(hwnd, 19, ref dark, sizeof(int));
+            if (!w.IsVisible) return; // 아직 그려지기 전이면 위 지정만으로 충분하다
             // 속성만 바꾸면 창을 클릭(활성화)하기 전까지 옛 색으로 남는다 -> 제목 표시줄을 즉시 다시 그리게 한다.
             Native.SetWindowPos(hwnd, IntPtr.Zero, 0, 0, 0, 0, 0x37 /* NOSIZE|NOMOVE|NOZORDER|NOACTIVATE|FRAMECHANGED */);
             Native.RedrawWindow(hwnd, IntPtr.Zero, IntPtr.Zero, 0x501 /* INVALIDATE|FRAME|UPDATENOW */);
@@ -74,9 +83,6 @@ internal static class ThemeService
         if (!_hooked)
         {
             _hooked = true;
-            // 새로 열리는 모든 창에 제목 표시줄 테마를 적용한다.
-            EventManager.RegisterClassHandler(typeof(Window), FrameworkElement.LoadedEvent,
-                new RoutedEventHandler((s, _) => ApplyTitleBar((Window)s)));
             // 시스템 테마를 따를 때는 윈도우 설정이 바뀌면 같이 바꾼다.
             SystemEvents.UserPreferenceChanged += (_, _) =>
             {

@@ -9,6 +9,7 @@ public partial class MemoWindow : Window
     public MemoWindow(string title, string memo)
     {
         InitializeComponent();
+        ThemeService.Hook(this);
         Title = title;
         Heading.Text = title;
         Body.Text = memo;

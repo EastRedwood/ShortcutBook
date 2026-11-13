@@ -16,6 +16,7 @@ public partial class StartWindow : Window
     public StartWindow()
     {
         InitializeComponent();
+        ThemeService.Hook(this);
         LoadRecent();
     }
 

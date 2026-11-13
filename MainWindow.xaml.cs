@@ -38,6 +38,7 @@ public partial class MainWindow : Window
         ListPath = path;
         _doc = doc;
         InitializeComponent();
+        ThemeService.Hook(this);
 
         Width = App.Settings.WindowWidth;
         Height = App.Settings.WindowHeight;
@@ -82,12 +83,6 @@ public partial class MainWindow : Window
         ApplySort();
         UpdateTitle();
         UpdateEmpty();
-        ApplyWindowIcon();
-    }
-
-    void ApplyWindowIcon()
-    {
-        Icon = string.IsNullOrWhiteSpace(_doc.IconPath) ? null : IconService.Get(new ListItem { IconPath = _doc.IconPath }, 32);
     }
 
     // ─────────────── 현재 창에서 다른 목록으로 이동 (뒤로 · 앞으로) ───────────────
@@ -182,15 +177,6 @@ public partial class MainWindow : Window
             if ((key == Key.Back || key == Key.Left) && _back.Count > 0) { GoBack(); e.Handled = true; }
             else if (key == Key.Right && _fwd.Count > 0) { GoForward(); e.Handled = true; }
         }
-    }
-
-    void OnListSettings(object sender, RoutedEventArgs e)
-    {
-        var dlg = new ListSettingsWindow(ListPath, _doc.IconPath) { Owner = this };
-        if (dlg.ShowDialog() != true) return;
-        _doc.IconPath = dlg.IconPath;
-        Save();
-        ApplyWindowIcon();
     }
 
     void OnViewChanged()

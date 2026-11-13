@@ -31,16 +31,6 @@ internal static class IconService
         if (!string.IsNullOrWhiteSpace(it.IconPath)) return Launcher.Expand(it.IconPath);
         var t = Launcher.Expand(it.Target);
         if (t.Length == 0 || Launcher.IsUrl(t)) return "";
-        if (Launcher.IsList(t) && File.Exists(t))
-        {
-            // 다른 목록을 가리키는 항목은 그 목록에 지정된 아이콘을 쓴다.
-            try
-            {
-                var icon = ListDocument.Load(t).IconPath;
-                if (!string.IsNullOrWhiteSpace(icon)) return Launcher.Expand(icon);
-            }
-            catch { }
-        }
         return t;
     }
 

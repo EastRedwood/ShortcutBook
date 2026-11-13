@@ -99,10 +99,8 @@
   "err_shell": "탐색기 연동을 바꾸지 못했습니다.\n{0}",
   "err_unhandled": "예기치 않은 오류가 발생했습니다.\n{0}",
 
-  "tip_listset": "목록 설정 (이 목록의 아이콘)",
-  "listset_title": "목록 설정",
-  "listset_icon": "목록 아이콘",
-  "listset_icon_hint": "창 아이콘과, 다른 목록 안에서 이 목록을 가리키는 항목의 아이콘으로 쓰입니다. 탐색기의 파일 아이콘은 바뀌지 않습니다.",
+
+
   "set_theme": "테마",
   "theme_system": "시스템",
   "theme_light": "라이트",

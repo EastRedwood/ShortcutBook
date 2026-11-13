@@ -12,6 +12,7 @@ public partial class SettingsWindow : Window
     public SettingsWindow()
     {
         InitializeComponent();
+        ThemeService.Hook(this);
 
         var radios = new[] { Size0, Size1, Size2, Size3 };
         radios[Math.Clamp(App.Settings.ViewSize, 0, 3)].IsChecked = true;

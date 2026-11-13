@@ -10,6 +10,7 @@ public partial class InputWindow : Window
     public InputWindow(string title, string prompt, string defaultText)
     {
         InitializeComponent();
+        ThemeService.Hook(this);
         Title = title;
         Prompt.Text = prompt;
         Box.Text = defaultText;

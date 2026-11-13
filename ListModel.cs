@@ -45,8 +45,6 @@ public sealed class ListItem
 public sealed class ListDocument
 {
     public int Version { get; set; } = 1;
-    /// <summary>이 목록의 아이콘 (창 아이콘, 다른 목록 안에서 이 목록을 가리키는 항목의 아이콘)</summary>
-    public string IconPath { get; set; } = "";
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public SortMode Sort { get; set; } = SortMode.Custom;
     public List<ListItem> Items { get; set; } = new();
