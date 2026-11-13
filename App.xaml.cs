@@ -161,7 +161,7 @@ public partial class App : Application
     {
         foreach (var a in args)
         {
-            if (a.StartsWith("--")) continue;
+            if (a.StartsWith("--") || string.IsNullOrWhiteSpace(a)) continue;
             OpenList(a);
         }
         if (_lists.Count == 0) ShowStart();
