@@ -25,16 +25,24 @@
         <sys:Double x:Key="GlyphSize">15</sys:Double>
         <Thickness x:Key="RowPadding">8,6</Thickness>
 
-        <Style TargetType="TextBox">
-            <Setter Property="Padding" Value="6,5"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="BorderBrush" Value="{StaticResource LineStrong}"/>
+        <!-- 테두리·밑줄 없는 글 입력 칸 (검색 칸, 메모 보기) -->
+        <Style x:Key="PlainTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <ScrollViewer x:Name="PART_ContentHost" Focusable="False" Background="Transparent"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="IconButton" TargetType="Button">
             <Setter Property="FontFamily" Value="{StaticResource IconFont}"/>
             <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Foreground" Value="{StaticResource SubText}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SubText}"/>
             <Setter Property="Width" Value="34"/>
             <Setter Property="Height" Value="34"/>
             <Setter Property="Focusable" Value="False"/>
@@ -47,11 +55,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource Hover}"/>
-                                <Setter Property="Foreground" Value="{StaticResource Text}"/>
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Hover}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource Text}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource Line}"/>
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Line}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.4"/>
@@ -73,16 +81,16 @@
             <Setter Property="Padding" Value="14,6"/>
             <Setter Property="MinWidth" Value="84"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Foreground" Value="{StaticResource Text}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bd" CornerRadius="6" Background="{StaticResource Bg}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="Bd" CornerRadius="6" Background="{DynamicResource Bg}" BorderBrush="{DynamicResource LineStrong}" BorderThickness="1" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource Hover}"/>
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Hover}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.45"/>
@@ -98,7 +106,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bd" CornerRadius="6" Background="{StaticResource Accent}" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="Bd" CornerRadius="6" Background="{DynamicResource Accent}" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -112,11 +120,11 @@
         </Style>
 
         <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
-            <Setter Property="Foreground" Value="{StaticResource Danger}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Danger}"/>
         </Style>
 
         <Style x:Key="FieldLabel" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource SubText}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SubText}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Margin" Value="0,10,0,3"/>
         </Style>

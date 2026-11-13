@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:l="clr-namespace:ShortcutBook"
         Title="{l:T edit_title}" Width="580" SizeToContent="Height"
-        Background="{StaticResource Bg}" Foreground="{StaticResource Text}"
+        Background="{DynamicResource Bg}" Foreground="{DynamicResource Text}"
         FontFamily="Segoe UI, Malgun Gothic" FontSize="13" UseLayoutRounding="True"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="NoResize">
     <Grid>
@@ -20,10 +20,10 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Border Width="56" Height="56" CornerRadius="8" Background="{StaticResource PanelBg}" Margin="0,8,14,0" VerticalAlignment="Top">
+                    <Border Width="56" Height="56" CornerRadius="8" Background="{DynamicResource PanelBg}" Margin="0,8,14,0" VerticalAlignment="Top">
                         <Grid>
                             <TextBlock x:Name="PreviewGlyph" Text="&#xE7C3;" FontFamily="{StaticResource IconFont}" FontSize="26"
-                                       Foreground="{StaticResource SubText}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                       Foreground="{DynamicResource SubText}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             <Image x:Name="PreviewImage" Width="40" Height="40" RenderOptions.BitmapScalingMode="HighQuality"/>
                         </Grid>
                     </Border>
@@ -50,7 +50,7 @@
                     <Button Grid.Column="1" Content="{l:T btn_file}" Style="{StaticResource SecondaryButton}" MinWidth="0" Margin="6,0,0,0" Click="OnBrowseTargetFile"/>
                     <Button Grid.Column="2" Content="{l:T btn_folder}" Style="{StaticResource SecondaryButton}" MinWidth="0" Margin="6,0,0,0" Click="OnBrowseTargetFolder"/>
                 </Grid>
-                <TextBlock Text="{l:T f_target_hint}" Foreground="{StaticResource SubText}" FontSize="11.5" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                <TextBlock Text="{l:T f_target_hint}" Foreground="{DynamicResource SubText}" FontSize="11.5" Margin="0,3,0,0" TextWrapping="Wrap"/>
 
                 <TextBlock Text="{l:T f_args}" Style="{StaticResource FieldLabel}"/>
                 <TextBox x:Name="ArgsBox"/>
@@ -68,7 +68,7 @@
                     <TextBox x:Name="RunWithBox"/>
                     <Button Grid.Column="1" Content="…" Style="{StaticResource SecondaryButton}" MinWidth="0" Margin="6,0,0,0" Click="OnBrowseRunWith"/>
                 </Grid>
-                <TextBlock Text="{l:T f_runwith_hint}" Foreground="{StaticResource SubText}" FontSize="11.5" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                <TextBlock Text="{l:T f_runwith_hint}" Foreground="{DynamicResource SubText}" FontSize="11.5" Margin="0,3,0,0" TextWrapping="Wrap"/>
 
                 <Grid Margin="0,12,0,0">
                     <Grid.ColumnDefinitions>
@@ -76,7 +76,7 @@
                         <ColumnDefinition Width="140"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="{l:T f_window}" VerticalAlignment="Center" Foreground="{StaticResource SubText}" Margin="0,0,10,0"/>
+                    <TextBlock Text="{l:T f_window}" VerticalAlignment="Center" Foreground="{DynamicResource SubText}" Margin="0,0,10,0"/>
                     <ComboBox x:Name="WindowCombo" Grid.Column="1" Padding="6,4"/>
                     <CheckBox x:Name="AdminCheck" Grid.Column="2" Content="{l:T f_admin}" VerticalAlignment="Center" Margin="20,0,0,0"/>
                 </Grid>
@@ -113,7 +113,7 @@
             </StackPanel>
         </ScrollViewer>
 
-        <Border Grid.Row="1" Background="{StaticResource PanelBg}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="22,12">
+        <Border Grid.Row="1" Background="{DynamicResource PanelBg}" BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Padding="22,12">
             <Grid>
                 <Button x:Name="DeleteBtn" Content="{l:T btn_delete}" Style="{StaticResource DangerButton}" HorizontalAlignment="Left" Click="OnDelete"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

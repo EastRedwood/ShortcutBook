@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:l="clr-namespace:ShortcutBook"
         Title="ShortcutBook" Width="520" Height="440" MinWidth="380" MinHeight="320"
-        Background="{StaticResource Bg}" Foreground="{StaticResource Text}"
+        Background="{DynamicResource Bg}" Foreground="{DynamicResource Text}"
         FontFamily="Segoe UI, Malgun Gothic" FontSize="13" UseLayoutRounding="True"
         WindowStartupLocation="CenterScreen">
     <Grid Margin="24,18,24,18">
@@ -15,7 +15,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <TextBlock Text="{l:T app_title}" FontSize="22" FontWeight="SemiBold"/>
-        <TextBlock Grid.Row="1" Text="{l:T start_hint}" Foreground="{StaticResource SubText}" TextWrapping="Wrap" Margin="0,6,0,0" LineHeight="20"/>
+        <TextBlock Grid.Row="1" Text="{l:T start_hint}" Foreground="{DynamicResource SubText}" TextWrapping="Wrap" Margin="0,6,0,0" LineHeight="20"/>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,10">
             <Button Content="{l:T btn_new_list}" Style="{StaticResource PrimaryButton}" Click="OnNew"/>
@@ -23,17 +23,17 @@
         </StackPanel>
 
         <Grid Grid.Row="3">
-            <ListBox x:Name="RecentList" BorderBrush="{StaticResource Line}" MouseDoubleClick="OnRecentDoubleClick">
+            <ListBox x:Name="RecentList" BorderBrush="{DynamicResource Line}" MouseDoubleClick="OnRecentDoubleClick">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Margin="4,5">
                             <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
-                            <TextBlock Text="{Binding Folder}" Foreground="{StaticResource SubText}" FontSize="11.5" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Text="{Binding Folder}" Foreground="{DynamicResource SubText}" FontSize="11.5" TextTrimming="CharacterEllipsis"/>
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <TextBlock x:Name="NoRecent" Text="{l:T start_no_recent}" Foreground="{StaticResource SubText}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+            <TextBlock x:Name="NoRecent" Text="{l:T start_no_recent}" Foreground="{DynamicResource SubText}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
         </Grid>
 
         <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">

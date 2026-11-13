@@ -3,10 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:l="clr-namespace:ShortcutBook"
         Title="ShortcutBook" Width="760" Height="560" MinWidth="420" MinHeight="300"
-        Background="{StaticResource Bg}" Foreground="{StaticResource Text}"
+        Background="{DynamicResource Bg}" Foreground="{DynamicResource Text}"
         FontFamily="Segoe UI, Malgun Gothic" FontSize="13"
         UseLayoutRounding="True" SnapsToDevicePixels="True"
         AllowDrop="True" DragOver="OnWindowDragOver" Drop="OnWindowDrop"
+        PreviewKeyDown="OnWindowKeyDown" PreviewMouseDown="OnWindowMouseDown"
         WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="B2V"/>
@@ -18,7 +19,7 @@
         </Grid.RowDefinitions>
 
         <!-- 상단 바: 검색 · 추가 · 설정 · 정렬 · 도움말 -->
-        <Border Background="{StaticResource PanelBg}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="10,8">
+        <Border Background="{DynamicResource PanelBg}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" Padding="10,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -26,20 +27,21 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Background="White" BorderBrush="{StaticResource LineStrong}" BorderThickness="1" CornerRadius="6" Height="34" Margin="0,0,8,0">
+                <Border Background="{DynamicResource Bg}" BorderBrush="{DynamicResource LineStrong}" BorderThickness="1" CornerRadius="6" Height="34" Margin="0,0,8,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="&#xE721;" FontFamily="{StaticResource IconFont}" FontSize="14" Foreground="{StaticResource SubText}"
+                        <TextBlock Text="&#xE721;" FontFamily="{StaticResource IconFont}" FontSize="14" Foreground="{DynamicResource SubText}"
                                    VerticalAlignment="Center" Margin="10,0,6,0"/>
-                        <TextBox x:Name="SearchBox" Grid.Column="1" BorderThickness="0" Background="Transparent" Padding="0"
+                        <TextBox x:Name="SearchBox" Grid.Column="1" Style="{StaticResource PlainTextBox}"
                                  VerticalContentAlignment="Center" TextChanged="OnSearchChanged"/>
-                        <TextBlock Grid.Column="1" Text="{l:T search_hint}" Foreground="{StaticResource SubText}" IsHitTestVisible="False"
+                        <TextBlock Grid.Column="1" Text="{l:T search_hint}" Foreground="{DynamicResource SubText}" IsHitTestVisible="False"
                                    VerticalAlignment="Center" x:Name="SearchHint"/>
                         <Button x:Name="ClearBtn" Grid.Column="2" Style="{StaticResource IconButton}" Content="&#xE711;" FontSize="11"
                                 Width="28" Height="28" Margin="0,0,3,0" Visibility="Collapsed" Click="OnClearSearch"/>
@@ -48,9 +50,10 @@
 
                 <Button x:Name="AddBtn" Grid.Column="1" Style="{StaticResource IconButton}" Content="&#xE710;" ToolTip="{l:T tip_add}"
                         Click="OnAdd" AllowDrop="True" DragOver="OnWindowDragOver" Drop="OnWindowDrop"/>
-                <Button x:Name="SettingsBtn" Grid.Column="2" Style="{StaticResource IconButton}" Content="&#xE713;" ToolTip="{l:T tip_settings}" Click="OnSettings"/>
-                <Button x:Name="SortBtn" Grid.Column="3" Style="{StaticResource IconButton}" Content="&#xE8CB;" ToolTip="{l:T tip_sort}" Click="OnSort"/>
-                <Button x:Name="HelpBtn" Grid.Column="4" Style="{StaticResource IconButton}" Content="&#xE897;" ToolTip="{l:T tip_help}" Click="OnHelp"/>
+                <Button x:Name="ListSetBtn" Grid.Column="2" Style="{StaticResource IconButton}" Content="&#xE8FD;" ToolTip="{l:T tip_listset}" Click="OnListSettings"/>
+                <Button x:Name="SettingsBtn" Grid.Column="3" Style="{StaticResource IconButton}" Content="&#xE713;" ToolTip="{l:T tip_settings}" Click="OnSettings"/>
+                <Button x:Name="SortBtn" Grid.Column="4" Style="{StaticResource IconButton}" Content="&#xE8CB;" ToolTip="{l:T tip_sort}" Click="OnSort"/>
+                <Button x:Name="HelpBtn" Grid.Column="5" Style="{StaticResource IconButton}" Content="&#xE897;" ToolTip="{l:T tip_help}" Click="OnHelp"/>
             </Grid>
         </Border>
 
@@ -69,15 +72,15 @@
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListBoxItem">
-                                    <Border x:Name="Bd" Background="Transparent" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
+                                    <Border x:Name="Bd" Background="Transparent" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1">
                                         <ContentPresenter/>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource Hover}"/>
+                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Hover}"/>
                                         </Trigger>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentSoft}"/>
+                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentSoft}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -89,8 +92,8 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type l:ItemVM}">
                         <Grid Background="Transparent" ToolTip="{Binding RowTip}">
-                            <Border x:Name="MarkTop" Height="2" VerticalAlignment="Top" Background="{StaticResource Accent}" Visibility="Collapsed"/>
-                            <Border x:Name="MarkBottom" Height="2" VerticalAlignment="Bottom" Background="{StaticResource Accent}" Visibility="Collapsed"/>
+                            <Border x:Name="MarkTop" Height="2" VerticalAlignment="Top" Background="{DynamicResource Accent}" Visibility="Collapsed"/>
+                            <Border x:Name="MarkBottom" Height="2" VerticalAlignment="Bottom" Background="{DynamicResource Accent}" Visibility="Collapsed"/>
                             <Grid Margin="{DynamicResource RowPadding}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -104,13 +107,13 @@
                                 <Border x:Name="Handle" Width="22" Background="Transparent" Cursor="SizeAll" ToolTip="{l:T tip_drag}"
                                         MouseLeftButtonDown="OnHandleDown" MouseMove="OnHandleMove" MouseLeftButtonUp="OnHandleUp">
                                     <TextBlock x:Name="HandleGlyph" Text="&#xE76F;" FontFamily="{StaticResource IconFont}" FontSize="14"
-                                               Foreground="{StaticResource LineStrong}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                               Foreground="{DynamicResource LineStrong}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
 
                                 <!-- 아이콘 -->
                                 <Grid Grid.Column="1" Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Margin="4,0,12,0" VerticalAlignment="Center">
                                     <TextBlock x:Name="FallbackIcon" Text="{Binding FallbackGlyph}" FontFamily="{StaticResource IconFont}"
-                                               FontSize="{DynamicResource GlyphBig}" Foreground="{StaticResource SubText}"
+                                               FontSize="{DynamicResource GlyphBig}" Foreground="{DynamicResource SubText}"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     <Image x:Name="IconImage" Source="{Binding Icon}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
                                 </Grid>
@@ -118,7 +121,7 @@
                                 <!-- 이름 · 설명 -->
                                 <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,8,0">
                                     <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="{DynamicResource NameSize}" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Text="{Binding Description}" FontSize="{DynamicResource DescSize}" Foreground="{StaticResource SubText}"
+                                    <TextBlock Text="{Binding Description}" FontSize="{DynamicResource DescSize}" Foreground="{DynamicResource SubText}"
                                                TextWrapping="Wrap" Margin="0,2,0,0" Visibility="{Binding HasDescription, Converter={StaticResource B2V}}"/>
                                 </StackPanel>
 
@@ -148,7 +151,7 @@
                             </DataTrigger>
                             <DataTrigger Binding="{Binding Missing}" Value="True">
                                 <Setter TargetName="IconImage" Property="Opacity" Value="0.4"/>
-                                <Setter TargetName="FallbackIcon" Property="Foreground" Value="{StaticResource Danger}"/>
+                                <Setter TargetName="FallbackIcon" Property="Foreground" Value="{DynamicResource Danger}"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding CanReorder}" Value="False">
                                 <Setter TargetName="HandleGlyph" Property="Opacity" Value="0.35"/>
@@ -160,7 +163,7 @@
             </ListBox>
 
             <!-- 비었을 때 안내 -->
-            <TextBlock x:Name="EmptyHint" Foreground="{StaticResource SubText}" TextAlignment="Center" TextWrapping="Wrap"
+            <TextBlock x:Name="EmptyHint" Foreground="{DynamicResource SubText}" TextAlignment="Center" TextWrapping="Wrap"
                        HorizontalAlignment="Center" VerticalAlignment="Center" Margin="40" IsHitTestVisible="False" Visibility="Collapsed"/>
         </Grid>
     </Grid>

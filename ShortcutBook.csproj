@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -23,6 +23,8 @@
 
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
     <TieredPGO>false</TieredPGO>
+    <!-- .NET 9 WPF 의 Fluent 테마(ThemeMode)는 아직 실험 기능 표시가 붙어 있다. 라이트/다크 컨트롤을 한 번에 얻으려고 쓴다. -->
+    <NoWarn>$(NoWarn);WPF0001</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <!-- 언어 파일은 실행 파일 옆 lang 폴더에 그대로 복사한다 (사용자가 직접 번역 파일을 추가할 수 있다). -->

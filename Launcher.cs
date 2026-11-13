@@ -31,7 +31,7 @@ internal static partial class Launcher
     static string Quote(string s) => s.Contains(' ') && !s.StartsWith('"') ? "\"" + s + "\"" : s;
 
     /// <summary>실행에 실패하면 사용자에게 보여 줄 문장을 돌려준다. 성공하거나 사용자가 취소했으면 null.</summary>
-    public static string? Run(ListItem it)
+    public static string? Run(ListItem it, MainWindow? from = null)
     {
         var target = Expand(it.Target);
         if (target.Length == 0) return Loc.T("err_no_target");
@@ -42,7 +42,7 @@ internal static partial class Launcher
             var runWith = Expand(it.RunWith);
             if (runWith.Length == 0 && IsList(target) && File.Exists(target))
             {
-                App.Instance.OpenList(target);
+                App.Instance.OpenListFrom(from, target);
                 return null;
             }
 

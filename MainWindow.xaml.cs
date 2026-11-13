@@ -11,8 +11,10 @@ public partial class MainWindow : Window
 {
     const string DragFormat = "ShortcutBook.Item";
 
-    public string ListPath { get; }
-    readonly ListDocument _doc;
+    public string ListPath { get; private set; }
+    ListDocument _doc;
+    readonly List<string> _back = new();
+    readonly List<string> _fwd = new();
     readonly ObservableCollection<ItemVM> _all = new();
     readonly ListCollectionView _view;
 
@@ -40,18 +42,15 @@ public partial class MainWindow : Window
         Width = App.Settings.WindowWidth;
         Height = App.Settings.WindowHeight;
 
-        foreach (var it in doc.Items) _all.Add(new ItemVM(it));
         _view = new ListCollectionView(_all);
         _view.Filter = FilterItem;
         List.ItemsSource = _view;
-
-        ApplySort();
-        UpdateTitle();
-        UpdateEmpty();
+        LoadList(path, doc);
 
         Loaded += (_, _) =>
         {
             var dpi = VisualTreeHelper.GetDpi(this);
+            List.Focus();
             if (Math.Abs(IconService.Scale - dpi.DpiScaleX) > 0.01)
             {
                 IconService.Scale = dpi.DpiScaleX;
@@ -70,6 +69,126 @@ public partial class MainWindow : Window
         };
         App.ViewChanged += OnViewChanged;
         Closed += (_, _) => App.ViewChanged -= OnViewChanged;
+    }
+
+    /// <summary>이 창에 목록 하나를 채운다 (처음 열 때와, 창을 다른 목록으로 바꿀 때)</summary>
+    void LoadList(string path, ListDocument doc)
+    {
+        ListPath = path;
+        _doc = doc;
+        SearchBox.Clear();
+        _all.Clear();
+        foreach (var it in doc.Items) _all.Add(new ItemVM(it));
+        ApplySort();
+        UpdateTitle();
+        UpdateEmpty();
+        ApplyWindowIcon();
+    }
+
+    void ApplyWindowIcon()
+    {
+        Icon = string.IsNullOrWhiteSpace(_doc.IconPath) ? null : IconService.Get(new ListItem { IconPath = _doc.IconPath }, 32);
+    }
+
+    // ─────────────── 현재 창에서 다른 목록으로 이동 (뒤로 · 앞으로) ───────────────
+
+    bool TryLoadFile(string path)
+    {
+        try
+        {
+            LoadList(path, ListDocument.Load(path));
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Log.Write("목록 열기 실패 " + path + ": " + ex);
+            ShowError(Loc.F("err_open_list", path, ex.Message));
+            return false;
+        }
+    }
+
+    /// <summary>이 창의 내용을 다른 목록으로 바꾼다. 이전 목록은 뒤로 가기 기록에 쌓인다.</summary>
+    public void OpenInPlace(string path)
+    {
+        var old = ListPath;
+        var oldDoc = _doc;
+        if (!TryLoadFile(path)) { RestoreAfterFailedLoad(old, oldDoc); return; }
+        _back.Add(old);
+        _fwd.Clear();
+        App.Instance.Rekey(old, path, this);
+    }
+
+    void RestoreAfterFailedLoad(string oldPath, ListDocument oldDoc)
+    {
+        if (ListPath != oldPath) LoadList(oldPath, oldDoc);
+    }
+
+    bool Navigate(List<string> from, List<string> to)
+    {
+        if (from.Count == 0) return false;
+        var target = from[^1];
+        if (!File.Exists(target))
+        {
+            from.RemoveAt(from.Count - 1);
+            ShowError(Loc.F("err_target_missing", target));
+            return true;
+        }
+        var other = App.Instance.FindWindow(target, this);
+        if (other != null) { App.Instance.Activate(other); return true; }
+
+        var old = ListPath;
+        var oldDoc = _doc;
+        if (!TryLoadFile(target)) { RestoreAfterFailedLoad(old, oldDoc); return true; }
+        from.RemoveAt(from.Count - 1);
+        to.Add(old);
+        App.Instance.Rekey(old, target, this);
+        return true;
+    }
+
+    void GoBack() => Navigate(_back, _fwd);
+    void GoForward() => Navigate(_fwd, _back);
+
+    void OnWindowMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton == MouseButton.XButton1) { GoBack(); e.Handled = true; }
+        else if (e.ChangedButton == MouseButton.XButton2) { GoForward(); e.Handled = true; }
+    }
+
+    // ─────────────── 키보드: Enter 실행 · 수정 단축키 · Backspace 뒤로 ───────────────
+
+    void OnWindowKeyDown(object sender, KeyEventArgs e)
+    {
+        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        bool typing = Keyboard.FocusedElement is TextBox tb && tb != SearchBox;
+
+        if (key == Key.Enter && Keyboard.Modifiers == ModifierKeys.None && !typing)
+        {
+            if (e.IsRepeat) { e.Handled = true; return; }
+            var vm = List.SelectedItem as ItemVM ?? (Searching ? _view.Cast<ItemVM>().FirstOrDefault() : null);
+            if (vm != null) { ShowError(Launcher.Run(vm.Item, this)); e.Handled = true; }
+            return;
+        }
+
+        if (Hotkey.TryParse(App.Settings.EditHotkey, out var hk, out var hm) && key == hk && Keyboard.Modifiers == hm && !typing)
+        {
+            if (!e.IsRepeat && List.SelectedItem is ItemVM sel) EditItem(sel);
+            e.Handled = true;
+            return;
+        }
+
+        if (key == Key.Back && Keyboard.Modifiers == ModifierKeys.None && Keyboard.FocusedElement is not TextBox)
+        {
+            if (_back.Count > 0) { GoBack(); e.Handled = true; }
+        }
+    }
+
+    void OnListSettings(object sender, RoutedEventArgs e)
+    {
+        var dlg = new ListSettingsWindow(ListPath, _doc.IconPath) { Owner = this };
+        if (dlg.ShowDialog() != true) return;
+        _doc.IconPath = dlg.IconPath;
+        Save();
+        ApplyWindowIcon();
     }
 
     void OnViewChanged()
@@ -194,6 +313,22 @@ public partial class MainWindow : Window
         List.ScrollIntoView(vm);
     }
 
+    void AddMany(IEnumerable<string> paths)
+    {
+        ItemVM? last = null;
+        foreach (var f in paths)
+        {
+            var it = ShortcutImport.FromPath(f);
+            if (string.IsNullOrWhiteSpace(it.Name)) it.Name = Path.GetFileName(f);
+            last = new ItemVM(it) { CanReorder = CanReorder };
+            _all.Add(last);
+        }
+        if (last == null) return;
+        Save();
+        UpdateEmpty();
+        List.ScrollIntoView(last);
+    }
+
     void EditItem(ItemVM vm)
     {
         var dlg = new ItemEditWindow(vm.Item.Clone(), isNew: false) { Owner = this };
@@ -255,7 +390,7 @@ public partial class MainWindow : Window
         if (FindAncestor<System.Windows.Controls.Primitives.ButtonBase>(e.OriginalSource as DependencyObject) != null) return;
         if (FindAncestor<System.Windows.Controls.Primitives.ScrollBar>(e.OriginalSource as DependencyObject) != null) return;
         var vm = ItemAt(e.GetPosition(List));
-        if (vm != null) ShowError(Launcher.Run(vm.Item));
+        if (vm != null) ShowError(Launcher.Run(vm.Item, this));
     }
 
     void OnListRightClick(object sender, MouseButtonEventArgs e)
@@ -273,7 +408,7 @@ public partial class MainWindow : Window
         }
         var t = Launcher.Expand(vm.Item.Target);
         bool local = t.Length > 0 && !Launcher.IsUrl(t) && (File.Exists(t) || Directory.Exists(t));
-        menu.Items.Add(Mi("menu_run", () => ShowError(Launcher.Run(vm.Item)), t.Length > 0));
+        menu.Items.Add(Mi("menu_run", () => ShowError(Launcher.Run(vm.Item, this)), t.Length > 0));
         menu.Items.Add(Mi("menu_open_location", () => Launcher.OpenLocation(vm.Item), local));
         menu.Items.Add(new Separator());
         menu.Items.Add(Mi("menu_edit", () => EditItem(vm)));
@@ -434,10 +569,12 @@ public partial class MainWindow : Window
 
         if (e.Data.GetDataPresent(DataFormats.FileDrop) && e.Data.GetData(DataFormats.FileDrop) is string[] files)
         {
-            // 드롭을 처리한 뒤에 팝업을 띄운다 (끌고 온 프로그램이 멈춰 보이지 않게)
+            // 드롭을 처리한 뒤에 추가한다 (끌고 온 프로그램이 멈춰 보이지 않게).
+            // 하나면 세부 설정 팝업, 여럿이면 팝업 없이 이름 그대로 일괄 등록한다.
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                foreach (var f in files) AddItem(ShortcutImport.FromPath(f));
+                if (files.Length == 1) { AddItem(ShortcutImport.FromPath(files[0])); return; }
+                AddMany(files);
             }));
             return;
         }

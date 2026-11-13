@@ -51,6 +51,7 @@ public partial class App : Application
         var args = e.Args;
         Settings = AppSettings.Load();
         Loc.Instance.Load(Settings.Language);
+        ThemeService.Apply();
 
         // 개발용: 창을 그림 파일로 저장하고 끝낸다 (입력 장치 없이 화면을 확인하는 용도)
         if (args.Length >= 3 && args[0] == "--render")
@@ -158,12 +159,43 @@ public partial class App : Application
         var w = ShortcutBook.MainWindow.TryCreate(path);
         if (w == null) return;
         _lists[path] = w;
-        w.Closed += (_, _) => { _lists.Remove(path); MemoryTrimLater(); };
+        w.Closed += (_, _) => { _lists.Remove(w.ListPath); MemoryTrimLater(); };
         Settings.AddRecent(path);
         Settings.Save();
         w.Show();
         Bring(w);
         if (_start != null) { _start.Close(); }
+    }
+
+    /// <summary>
+    /// 열려 있는 목록 안에서 다른 목록을 열 때. 설정이 "현재 창 대체"(기본)이면 그 창에서 목록을 바꾸고
+    /// (뒤로/앞으로 기록을 남긴다), "새 창"이면 새로 연다.
+    /// </summary>
+    public void OpenListFrom(MainWindow? from, string path)
+    {
+        if (from == null || Settings.OpenInNewWindow) { OpenList(path); return; }
+        try { path = Path.GetFullPath(path); } catch { }
+        if (!File.Exists(path)) { OpenList(path); return; }
+        if (_lists.TryGetValue(path, out var existing)) { Bring(existing); return; }
+        from.OpenInPlace(path);
+    }
+
+    /// <summary>이미 그 목록을 열고 있는 다른 창이 있으면 돌려준다.</summary>
+    public MainWindow? FindWindow(string path, MainWindow? except = null)
+    {
+        try { path = Path.GetFullPath(path); } catch { }
+        return _lists.TryGetValue(path, out var w) && w != except ? w : null;
+    }
+
+    public void Activate(Window w) => Bring(w);
+
+    /// <summary>창이 다른 목록으로 바뀌었을 때 경로 목록을 맞춘다.</summary>
+    public void Rekey(string oldPath, string newPath, MainWindow w)
+    {
+        _lists.Remove(oldPath);
+        _lists[newPath] = w;
+        Settings.AddRecent(newPath);
+        Settings.Save();
     }
 
     public void ShowStart()
@@ -322,7 +354,14 @@ public partial class App : Application
                     var dpi = VisualTreeHelper.GetDpi(w);
                     int pw = (int)Math.Ceiling(w.ActualWidth * dpi.DpiScaleX), ph = (int)Math.Ceiling(w.ActualHeight * dpi.DpiScaleY);
                     var rtb = new RenderTargetBitmap(pw, ph, 96 * dpi.DpiScaleX, 96 * dpi.DpiScaleY, PixelFormats.Pbgra32);
-                    rtb.Render((Visual)w.Content);
+                    // 창 배경(다크 테마 색 등)까지 포함해 그린다
+                    var dv = new DrawingVisual();
+                    using (var dc = dv.RenderOpen())
+                    {
+                        dc.DrawRectangle(w.Background, null, new Rect(0, 0, w.ActualWidth, w.ActualHeight));
+                        dc.DrawRectangle(new VisualBrush((Visual)w.Content), null, new Rect(0, 0, w.ActualWidth, w.ActualHeight));
+                    }
+                    rtb.Render(dv);
                     var enc = new PngBitmapEncoder();
                     enc.Frames.Add(BitmapFrame.Create(rtb));
                     using var fs = File.Create(output);

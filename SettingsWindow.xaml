@@ -2,31 +2,64 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:l="clr-namespace:ShortcutBook"
-        Title="{l:T settings_title}" Width="440" SizeToContent="Height"
-        Background="{StaticResource Bg}" Foreground="{StaticResource Text}"
+        Title="{l:T settings_title}" Width="460" SizeToContent="Height"
+        Background="{DynamicResource Bg}" Foreground="{DynamicResource Text}"
         FontFamily="Segoe UI, Malgun Gothic" FontSize="13" UseLayoutRounding="True"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="NoResize">
     <StackPanel Margin="24,12,24,16">
-        <TextBlock Text="{l:T set_size}" Style="{StaticResource SectionTitle}" Margin="0,8,0,0"/>
-        <StackPanel Margin="0,8,0,0">
-            <RadioButton x:Name="Size0" Content="{l:T size_small}" GroupName="size" Margin="0,2" Checked="OnSizeChecked" Tag="0"/>
-            <RadioButton x:Name="Size1" Content="{l:T size_medium}" GroupName="size" Margin="0,2" Checked="OnSizeChecked" Tag="1"/>
-            <RadioButton x:Name="Size2" Content="{l:T size_large}" GroupName="size" Margin="0,2" Checked="OnSizeChecked" Tag="2"/>
-            <RadioButton x:Name="Size3" Content="{l:T size_xlarge}" GroupName="size" Margin="0,2" Checked="OnSizeChecked" Tag="3"/>
+        <!-- 테마 -->
+        <TextBlock Text="{l:T set_theme}" Style="{StaticResource SectionTitle}" Margin="0,8,0,0"/>
+        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+            <RadioButton x:Name="Theme0" Content="{l:T theme_system}" GroupName="theme" Margin="0,0,18,0" Checked="OnThemeChecked" Tag="0"/>
+            <RadioButton x:Name="Theme1" Content="{l:T theme_light}" GroupName="theme" Margin="0,0,18,0" Checked="OnThemeChecked" Tag="1"/>
+            <RadioButton x:Name="Theme2" Content="{l:T theme_dark}" GroupName="theme" Checked="OnThemeChecked" Tag="2"/>
         </StackPanel>
 
+        <!-- 목록 크기 -->
+        <TextBlock Text="{l:T set_size}" Style="{StaticResource SectionTitle}"/>
+        <WrapPanel Margin="0,8,0,0">
+            <RadioButton x:Name="Size0" Content="{l:T size_small}" GroupName="size" Margin="0,0,18,0" Checked="OnSizeChecked" Tag="0"/>
+            <RadioButton x:Name="Size1" Content="{l:T size_medium}" GroupName="size" Margin="0,0,18,0" Checked="OnSizeChecked" Tag="1"/>
+            <RadioButton x:Name="Size2" Content="{l:T size_large}" GroupName="size" Margin="0,0,18,0" Checked="OnSizeChecked" Tag="2"/>
+            <RadioButton x:Name="Size3" Content="{l:T size_xlarge}" GroupName="size" Checked="OnSizeChecked" Tag="3"/>
+        </WrapPanel>
+
+        <!-- 다른 목록 열기 -->
+        <TextBlock Text="{l:T set_open_mode}" Style="{StaticResource SectionTitle}"/>
+        <StackPanel Margin="0,8,0,0">
+            <RadioButton x:Name="OpenReplace" Content="{l:T open_replace}" GroupName="open" Margin="0,2" Checked="OnOpenModeChecked" Tag="0"/>
+            <RadioButton x:Name="OpenNew" Content="{l:T open_new}" GroupName="open" Margin="0,2" Checked="OnOpenModeChecked" Tag="1"/>
+        </StackPanel>
+        <TextBlock Text="{l:T open_hint}" Foreground="{DynamicResource SubText}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
+
+        <!-- 수정 단축키 -->
+        <TextBlock Text="{l:T set_edit_key}" Style="{StaticResource SectionTitle}"/>
+        <Grid Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="160"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="EditKeyBox" IsReadOnly="True" IsReadOnlyCaretVisible="False" VerticalContentAlignment="Center" Padding="4,5"
+                     PreviewKeyDown="OnEditKeyDown" ToolTip="{l:T edit_key_tip}"/>
+            <Button Grid.Column="1" Content="{l:T btn_default_icon}" Style="{StaticResource SecondaryButton}" MinWidth="0" Margin="8,0,0,0" Click="OnEditKeyDefault"/>
+        </Grid>
+        <TextBlock Text="{l:T edit_key_hint}" Foreground="{DynamicResource SubText}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
+
+        <!-- 언어 -->
         <TextBlock Text="{l:T set_language}" Style="{StaticResource SectionTitle}"/>
         <ComboBox x:Name="LangCombo" Margin="0,8,0,0" Padding="6,4" SelectionChanged="OnLangChanged"/>
 
+        <!-- 탐색기 연동 -->
         <TextBlock Text="{l:T set_shell}" Style="{StaticResource SectionTitle}"/>
         <CheckBox x:Name="ShellCheck" Margin="0,8,0,0" Checked="OnShellToggled" Unchecked="OnShellToggled">
             <TextBlock Text="{l:T set_shell_check}" TextWrapping="Wrap"/>
         </CheckBox>
-        <TextBlock x:Name="ShellStatus" Foreground="{StaticResource SubText}" FontSize="12" Margin="22,4,0,0" TextWrapping="Wrap"/>
+        <TextBlock x:Name="ShellStatus" Foreground="{DynamicResource SubText}" FontSize="12" Margin="22,4,0,0" TextWrapping="Wrap"/>
 
-        <Border BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Margin="0,20,0,0" Padding="0,10,0,0">
+        <Border BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Margin="0,20,0,0" Padding="0,10,0,0">
             <Grid>
-                <TextBlock x:Name="VersionText" Foreground="{StaticResource SubText}" VerticalAlignment="Center"/>
+                <TextBlock x:Name="VersionText" Foreground="{DynamicResource SubText}" VerticalAlignment="Center"/>
                 <Button Content="{l:T btn_close}" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right" IsCancel="True" IsDefault="True"/>
             </Grid>
         </Border>

@@ -10,6 +10,12 @@ public sealed class AppSettings
     public int ViewSize { get; set; } = 1;
     public string? Language { get; set; }
     public bool RegisterShell { get; set; } = true;
+    /// <summary>0 시스템 · 1 라이트 · 2 다크</summary>
+    public int Theme { get; set; }
+    /// <summary>목록 안에서 다른 목록을 열 때 새 창으로 열지 (기본: 현재 창을 대체)</summary>
+    public bool OpenInNewWindow { get; set; }
+    /// <summary>선택한 항목의 수정 창을 여는 단축키</summary>
+    public string EditHotkey { get; set; } = "F2";
     public List<string> Recent { get; set; } = new();
     public double WindowWidth { get; set; } = 760;
     public double WindowHeight { get; set; } = 560;
