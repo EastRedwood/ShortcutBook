@@ -24,6 +24,7 @@ public partial class SettingsWindow : Window
 
         new[] { Theme0, Theme1, Theme2 }[Math.Clamp(App.Settings.Theme, 0, 2)].IsChecked = true;
         (App.Settings.OpenInNewWindow ? OpenNew : OpenReplace).IsChecked = true;
+        new[] { Dup0, Dup1, Dup2 }[Math.Clamp(App.Settings.DuplicateMode, 0, 2)].IsChecked = true;
         EditKeyBox.Text = App.Settings.EditHotkey;
         NameWidthSlider.Value = Math.Clamp(App.Settings.NameWidth, 120, 600);
         NameWidthText.Text = ((int)NameWidthSlider.Value) + " px";
@@ -89,6 +90,16 @@ public partial class SettingsWindow : Window
         if (_loading) return;
         App.Settings.OpenInNewWindow = OpenNew.IsChecked == true;
         App.Settings.Save();
+    }
+
+    void OnDupChecked(object sender, RoutedEventArgs e)
+    {
+        if (_loading) return;
+        if (sender is RadioButton { Tag: string t } && int.TryParse(t, out int v))
+        {
+            App.Settings.DuplicateMode = v;
+            App.Settings.Save();
+        }
     }
 
     /// <summary>이 칸에서 누른 키 조합을 수정 단축키로 저장한다.</summary>

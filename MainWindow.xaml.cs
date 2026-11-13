@@ -294,11 +294,15 @@ public partial class MainWindow : Window
     {
         var dlg = new ItemEditWindow(seed, isNew: true) { Owner = this };
         if (dlg.ShowDialog() != true || dlg.Deleted) return;
-        var vm = new ItemVM(dlg.Result) { CanReorder = CanReorder };
-        _all.Add(vm);
+        var (vm, skipped) = Place(dlg.Result);
+        if (skipped)
+        {
+            MessageBox.Show(this, Loc.F("dup_skipped_msg", dlg.Result.Target), AppInfo.Name, MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
         Save();
         UpdateEmpty();
-        List.ScrollIntoView(vm);
+        if (vm != null) List.ScrollIntoView(vm);
     }
 
     void AddMany(IEnumerable<string> paths)
@@ -308,13 +312,46 @@ public partial class MainWindow : Window
         {
             var it = ShortcutImport.FromPath(f);
             if (string.IsNullOrWhiteSpace(it.Name)) it.Name = Path.GetFileName(f);
-            last = new ItemVM(it) { CanReorder = CanReorder };
-            _all.Add(last);
+            var (vm, skipped) = Place(it);
+            if (!skipped) last = vm;
         }
         if (last == null) return;
         Save();
         UpdateEmpty();
         List.ScrollIntoView(last);
+    }
+
+    /// <summary>설정의 "같은 경로·주소 등록" 방식에 따라 목록에 넣는다. 제외하면 skipped = true.</summary>
+    (ItemVM? Vm, bool Skipped) Place(ListItem it)
+    {
+        var dup = App.Settings.DuplicateMode == 0 ? null : FindDuplicate(it);
+        if (dup == null)
+        {
+            var vm = new ItemVM(it) { CanReorder = CanReorder };
+            _all.Add(vm);
+            return (vm, false);
+        }
+        if (App.Settings.DuplicateMode == 1) return (null, true);
+        dup.Item.CopyFrom(it);
+        dup.Refresh();
+        _view.Refresh();
+        return (dup, false);
+    }
+
+    ItemVM? FindDuplicate(ListItem it)
+    {
+        var key = TargetKey(it.Target);
+        if (key.Length == 0) return null;
+        return _all.FirstOrDefault(v => TargetKey(v.Item.Target) == key);
+    }
+
+    static string TargetKey(string target)
+    {
+        var t = Launcher.Expand(target ?? "").Trim();
+        if (t.Length == 0) return "";
+        if (Launcher.IsUrl(t)) return t.TrimEnd('/').ToLowerInvariant();
+        try { return Path.GetFullPath(t).TrimEnd('\\', '/').ToLowerInvariant(); }
+        catch { return t.ToLowerInvariant(); }
     }
 
     void DeleteItem(ItemVM vm)

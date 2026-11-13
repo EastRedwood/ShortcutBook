@@ -127,5 +127,11 @@
   "btn_yes": "Yes",
   "btn_no": "No",
   "set_name_width": "Name column width",
-  "name_width_hint": "Descriptions start right after the name column, left-aligned."
+  "name_width_hint": "Descriptions start right after the name column, left-aligned.",
+  "set_dup": "When registering the same path or address",
+  "dup_add": "Add another entry (default)",
+  "dup_skip": "Skip registration",
+  "dup_overwrite": "Overwrite the existing entry",
+  "dup_hint": "Applies when the target path or web address is already in the list. Overwriting replaces the existing row's content and keeps its position.",
+  "dup_skipped_msg": "This item is already in the list, so it was not registered.\n{0}"
 }

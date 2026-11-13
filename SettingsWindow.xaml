@@ -45,6 +45,15 @@
         </StackPanel>
         <TextBlock Text="{l:T open_hint}" Foreground="{DynamicResource SubText}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
 
+        <!-- 같은 대상 등록 -->
+        <TextBlock Text="{l:T set_dup}" Style="{StaticResource SectionTitle}"/>
+        <StackPanel Margin="0,8,0,0">
+            <RadioButton x:Name="Dup0" Content="{l:T dup_add}" GroupName="dup" Margin="0,2" Checked="OnDupChecked" Tag="0"/>
+            <RadioButton x:Name="Dup1" Content="{l:T dup_skip}" GroupName="dup" Margin="0,2" Checked="OnDupChecked" Tag="1"/>
+            <RadioButton x:Name="Dup2" Content="{l:T dup_overwrite}" GroupName="dup" Margin="0,2" Checked="OnDupChecked" Tag="2"/>
+        </StackPanel>
+        <TextBlock Text="{l:T dup_hint}" Foreground="{DynamicResource SubText}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
+
         <!-- 수정 단축키 -->
         <TextBlock Text="{l:T set_edit_key}" Style="{StaticResource SectionTitle}"/>
         <Grid Margin="0,8,0,0">
