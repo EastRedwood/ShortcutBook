@@ -13,7 +13,8 @@ public partial class SettingsWindow : Window
     {
         InitializeComponent();
         ThemeService.Hook(this);
-        MaxHeight = Math.Max(300, SystemParameters.WorkArea.Height - 40);
+        PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape && EditKeyBox.IsKeyboardFocusWithin == false) Close(); };
+        MaxHeight =Math.Max(300, SystemParameters.WorkArea.Height - 40);
 
         var radios = new[] { Size0, Size1, Size2, Size3 };
         radios[Math.Clamp(App.Settings.ViewSize, 0, 3)].IsChecked = true;

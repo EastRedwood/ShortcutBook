@@ -164,6 +164,13 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (key == Key.Delete && Keyboard.Modifiers == ModifierKeys.None && Keyboard.FocusedElement is not TextBox)
+        {
+            if (!e.IsRepeat && List.SelectedItem is ItemVM del) DeleteItem(del); // 확인 창을 거쳐 삭제
+            e.Handled = true;
+            return;
+        }
+
         if (Hotkey.TryParse(App.Settings.EditHotkey, out var hk, out var hm) && key == hk && Keyboard.Modifiers == hm && !typing)
         {
             if (!e.IsRepeat && List.SelectedItem is ItemVM sel) EditItem(sel);
