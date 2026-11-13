@@ -30,7 +30,6 @@ public partial class ItemEditWindow : Window
         TargetBox.Text = item.Target;
         ArgsBox.Text = item.Arguments;
         WorkDirBox.Text = item.WorkDir;
-        RunWithBox.Text = item.RunWith;
         IconBox.Text = item.IconPath;
         WindowCombo.SelectedIndex = Math.Clamp(item.WindowStyle, 0, 2);
         AdminCheck.IsChecked = item.RunAsAdmin;
@@ -122,10 +121,15 @@ public partial class ItemEditWindow : Window
         if (f != null) WorkDirBox.Text = f;
     }
 
-    void OnBrowseRunWith(object sender, RoutedEventArgs e)
+    /// <summary>설치된 앱(스토어 앱 포함)을 목록에서 골라 대상으로 삼는다.</summary>
+    void OnPickApp(object sender, RoutedEventArgs e)
     {
-        var f = PickFile(this, Loc.T("filter_programs") + "|*.exe;*.bat;*.cmd;*.lnk|" + Loc.T("filter_all") + "|*.*", RunWithBox.Text);
-        if (f != null) RunWithBox.Text = f;
+        var dlg = new AppPickerWindow { Owner = this };
+        if (dlg.ShowDialog() != true || dlg.Selected is not { } app) return;
+        TargetBox.Text = app.Target;
+        ArgsBox.Clear();
+        WorkDirBox.Clear();
+        if (NameBox.Text.Trim().Length == 0) NameBox.Text = app.Name;
     }
 
     void OnBrowseIcon(object sender, RoutedEventArgs e)
@@ -178,7 +182,6 @@ public partial class ItemEditWindow : Window
         _item.Target = TargetBox.Text.Trim().Trim('"');
         _item.Arguments = ArgsBox.Text.Trim();
         _item.WorkDir = WorkDirBox.Text.Trim().Trim('"');
-        _item.RunWith = RunWithBox.Text.Trim().Trim('"');
         _item.IconPath = IconBox.Text.Trim().Trim('"');
         _item.WindowStyle = Math.Max(0, WindowCombo.SelectedIndex);
         _item.RunAsAdmin = AdminCheck.IsChecked == true;

@@ -33,13 +33,11 @@
   "f_desc": "Description",
   "sec_launch": "Launch",
   "f_target": "Target (program, document, folder, web address, or another list)",
-  "f_target_hint": "You can drop a file onto this box. If the target is another list (.sbook), that list opens.",
+  "f_target_hint": "You can drop a file onto this box. If the target is another list (.sbook), that list opens. Pick Store apps with the App button.",
   "btn_file": "File",
   "btn_folder": "Folder",
   "f_args": "Arguments (e.g. -fullscreen)",
   "f_workdir": "Start in",
-  "f_runwith": "Open with app (optional)",
-  "f_runwith_hint": "If set, the target is opened with this app. Example: open a document with Notepad.",
   "f_window": "Window",
   "win_normal": "Normal",
   "win_min": "Minimized",
@@ -90,7 +88,6 @@
 
   "err_no_target": "This item has no target to run.",
   "err_target_missing": "Not found:\n{0}",
-  "err_app_missing": "The app was not found:\n{0}",
   "err_run_failed": "Could not run it.\n{0}",
   "err_name_required": "Please enter a name.",
   "err_open_list": "Could not open the list.\n{0}\n\n{1}",
@@ -134,5 +131,14 @@
   "dup_skip": "Skip registration",
   "dup_overwrite": "Overwrite the existing entry",
   "dup_hint": "Applies when the target path or web address is already in the list. Overwriting replaces the existing row's content and keeps its position.",
-  "dup_skipped_msg": "This item is already in the list, so it was not registered.\n{0}"
+  "dup_skipped_msg": "This item is already in the list, so it was not registered.\n{0}",
+  "btn_app": "App",
+  "btn_app_tip": "Pick an installed app (including Microsoft Store apps) from a list and use it as the target.",
+  "btn_select": "Select",
+  "app_picker_title": "Choose an app",
+  "app_picker_hint": "Type part of the app name to search. Apps that are hard to locate as files, like Store apps, can be picked here to make a shortcut.",
+  "app_picker_loading": "Reading the app list…",
+  "app_picker_none": "No matching app.",
+  "app_kind_store": "Windows app",
+  "app_kind_program": "Program"
 }

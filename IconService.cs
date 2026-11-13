@@ -55,6 +55,7 @@ internal static class IconService
     {
         try
         {
+            if (Launcher.IsShellApp(src)) return ShellImage(src, px); // 앱(shell:AppsFolder\ID): 셸이 아이콘을 준다
             var (path, idx, hasIndex) = Split(src);
             var ext = Path.GetExtension(path).ToLowerInvariant();
 
@@ -105,8 +106,9 @@ internal static class IconService
     /// <summary>탐색기가 보여 주는 것과 같은 아이콘 (폴더·문서·바로가기 포함)</summary>
     static ImageSource? ShellImage(string path, int px)
     {
-        if (!File.Exists(path) && !Directory.Exists(path)) return null;
-        path = Path.GetFullPath(path); // 셸은 역슬래시 경로만 받는다 (C:/x 형태는 실패)
+        bool app = Launcher.IsShellApp(path);
+        if (!app && !File.Exists(path) && !Directory.Exists(path)) return null;
+        if (!app) path = Path.GetFullPath(path); // 셸은 역슬래시 경로만 받는다 (C:/x 형태는 실패)
         var iid = Native.IID_IShellItemImageFactory;
         Native.IShellItemImageFactory? factory = null;
         try

@@ -45,10 +45,12 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBox x:Name="TargetBox" AllowDrop="True" PreviewDragOver="OnTargetDragOver" PreviewDrop="OnTargetDrop" TextChanged="OnTargetChanged"/>
                     <Button Grid.Column="1" Content="{l:T btn_file}" Style="{StaticResource SecondaryButton}" MinWidth="0" Margin="6,0,0,0" Click="OnBrowseTargetFile"/>
                     <Button Grid.Column="2" Content="{l:T btn_folder}" Style="{StaticResource SecondaryButton}" MinWidth="0" Margin="6,0,0,0" Click="OnBrowseTargetFolder"/>
+                    <Button Grid.Column="3" Content="{l:T btn_app}" Style="{StaticResource SecondaryButton}" MinWidth="0" Margin="6,0,0,0" Click="OnPickApp" ToolTip="{l:T btn_app_tip}"/>
                 </Grid>
                 <TextBlock Text="{l:T f_target_hint}" Foreground="{DynamicResource SubText}" FontSize="11.5" Margin="0,3,0,0" TextWrapping="Wrap"/>
 
@@ -61,14 +63,6 @@
                     <TextBox x:Name="WorkDirBox"/>
                     <Button Grid.Column="1" Content="…" Style="{StaticResource SecondaryButton}" MinWidth="0" Margin="6,0,0,0" Click="OnBrowseWorkDir"/>
                 </Grid>
-
-                <TextBlock Text="{l:T f_runwith}" Style="{StaticResource FieldLabel}"/>
-                <Grid>
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                    <TextBox x:Name="RunWithBox"/>
-                    <Button Grid.Column="1" Content="…" Style="{StaticResource SecondaryButton}" MinWidth="0" Margin="6,0,0,0" Click="OnBrowseRunWith"/>
-                </Grid>
-                <TextBlock Text="{l:T f_runwith_hint}" Foreground="{DynamicResource SubText}" FontSize="11.5" Margin="0,3,0,0" TextWrapping="Wrap"/>
 
                 <Grid Margin="0,12,0,0">
                     <Grid.ColumnDefinitions>

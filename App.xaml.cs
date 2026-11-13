@@ -431,6 +431,7 @@ public partial class App : Application
                     }
                 case "settings": w = new SettingsWindow(); break;
                 case "help": w = new HelpWindow(); break;
+                case "apppicker": w = new AppPickerWindow(); break;
                 case "message": w = new MessageWindow("'테스트' 항목을 목록에서 삭제하시겠습니까?\n(실제 프로그램이나 파일은 지워지지 않습니다.)", AppInfo.Name, MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No); break;
                 case "start": w = new StartWindow(); break;
                 case "memo": w = new MemoWindow("메모 예시", "첫 줄\n둘째 줄 — 길게 써도 줄이 바뀌어 보여야 합니다. " + new string('가', 60)); break;

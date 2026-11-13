@@ -25,10 +25,14 @@ internal static partial class Launcher
         return s.StartsWith("www.", StringComparison.OrdinalIgnoreCase) ? "https://" + s : s;
     }
 
+    /// <summary>설치된 앱(스토어 앱 포함)을 가리키는 대상. 탐색기의 shell:AppsFolder 주소 형식이다.</summary>
+    public const string AppsFolderPrefix = @"shell:AppsFolder\";
+
+    public static bool IsShellApp(string s) =>
+        s.StartsWith(AppsFolderPrefix, StringComparison.OrdinalIgnoreCase) && s.Length > AppsFolderPrefix.Length;
+
     public static bool IsList(string path) =>
         path.EndsWith(AppInfo.Extension, StringComparison.OrdinalIgnoreCase);
-
-    static string Quote(string s) => s.Contains(' ') && !s.StartsWith('"') ? "\"" + s + "\"" : s;
 
     /// <summary>실행에 실패하면 사용자에게 보여 줄 문장을 돌려준다. 성공하거나 사용자가 취소했으면 null.</summary>
     public static string? Run(ListItem it, MainWindow? from = null)
@@ -39,8 +43,9 @@ internal static partial class Launcher
         {
             if (IsUrl(target)) { ShellOpen(NormalizeUrl(target)); return null; }
 
-            var runWith = Expand(it.RunWith);
-            if (runWith.Length == 0 && IsList(target) && File.Exists(target))
+            if (IsShellApp(target)) { ShellOpen(target); return null; }
+
+            if (IsList(target) && File.Exists(target))
             {
                 App.Instance.OpenListFrom(from, target);
                 return null;
@@ -50,21 +55,12 @@ internal static partial class Launcher
             if (!isDir && !File.Exists(target)) return Loc.F("err_target_missing", target);
 
             var psi = new ProcessStartInfo { UseShellExecute = true };
-            if (runWith.Length > 0)
-            {
-                if (!File.Exists(runWith)) return Loc.F("err_app_missing", runWith);
-                psi.FileName = runWith;
-                psi.Arguments = Quote(target) + (string.IsNullOrWhiteSpace(it.Arguments) ? "" : " " + it.Arguments);
-            }
-            else
-            {
-                psi.FileName = target;
-                if (!isDir) psi.Arguments = it.Arguments ?? "";
-            }
+            psi.FileName = target;
+            if (!isDir) psi.Arguments = it.Arguments ?? "";
 
             var work = Expand(it.WorkDir);
             if (work.Length > 0 && Directory.Exists(work)) psi.WorkingDirectory = work;
-            else if (!isDir) psi.WorkingDirectory = Path.GetDirectoryName(runWith.Length > 0 ? runWith : target) ?? "";
+            else if (!isDir) psi.WorkingDirectory = Path.GetDirectoryName(target) ?? "";
 
             psi.WindowStyle = it.WindowStyle switch
             {

@@ -357,6 +357,7 @@ public partial class MainWindow : Window
         var t = Launcher.Expand(target ?? "").Trim();
         if (t.Length == 0) return "";
         if (Launcher.IsUrl(t)) return t.TrimEnd('/').ToLowerInvariant();
+        if (Launcher.IsShellApp(t)) return t.ToLowerInvariant();
         try { return Path.GetFullPath(t).TrimEnd('\\', '/').ToLowerInvariant(); }
         catch { return t.ToLowerInvariant(); }
     }

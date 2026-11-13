@@ -33,13 +33,11 @@
   "f_desc": "설명",
   "sec_launch": "실행",
   "f_target": "대상 (실행 파일·문서·폴더·웹 주소·다른 목록)",
-  "f_target_hint": "파일을 이 칸에 끌어놓아도 됩니다. 다른 목록(.sbook)을 대상으로 하면 그 목록이 열립니다.",
+  "f_target_hint": "파일을 이 칸에 끌어놓아도 됩니다. 다른 목록(.sbook)을 대상으로 하면 그 목록이 열립니다. 스토어 앱은 [앱] 단추로 고르세요.",
   "btn_file": "파일",
   "btn_folder": "폴더",
   "f_args": "인수 (예: -fullscreen)",
   "f_workdir": "시작 위치",
-  "f_runwith": "실행할 앱 (선택)",
-  "f_runwith_hint": "지정하면 이 앱으로 대상을 엽니다. 예: 메모장으로 문서 열기",
   "f_window": "실행 크기",
   "win_normal": "보통 창",
   "win_min": "최소화",
@@ -90,7 +88,6 @@
 
   "err_no_target": "이 항목에는 실행할 대상이 지정되어 있지 않습니다.",
   "err_target_missing": "찾을 수 없습니다:\n{0}",
-  "err_app_missing": "실행할 앱을 찾을 수 없습니다:\n{0}",
   "err_run_failed": "실행하지 못했습니다.\n{0}",
   "err_name_required": "이름을 입력해 주십시오.",
   "err_open_list": "목록을 열지 못했습니다.\n{0}\n\n{1}",
@@ -134,5 +131,14 @@
   "dup_skip": "등록 제외",
   "dup_overwrite": "새로 덮어쓰기",
   "dup_hint": "대상 경로나 웹 주소가 이미 목록에 있을 때의 처리입니다. 덮어쓰면 기존 줄의 내용을 새 내용으로 바꾸고 위치는 그대로 둡니다.",
-  "dup_skipped_msg": "이미 목록에 있는 항목이라 등록하지 않았습니다.\n{0}"
+  "dup_skipped_msg": "이미 목록에 있는 항목이라 등록하지 않았습니다.\n{0}",
+  "btn_app": "앱",
+  "btn_app_tip": "설치된 앱(Windows 스토어 앱 포함)을 목록에서 골라 대상으로 정합니다.",
+  "btn_select": "선택",
+  "app_picker_title": "앱 선택",
+  "app_picker_hint": "앱 이름의 일부만 입력해도 찾습니다. 스토어 앱처럼 실행 파일을 찾기 어려운 앱도 여기서 고르면 바로가기가 됩니다.",
+  "app_picker_loading": "앱 목록을 읽는 중…",
+  "app_picker_none": "찾는 앱이 없습니다.",
+  "app_kind_store": "Windows 앱",
+  "app_kind_program": "프로그램"
 }

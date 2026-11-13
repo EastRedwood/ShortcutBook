@@ -20,8 +20,6 @@ public sealed class ListItem
     public string Target { get; set; } = "";
     public string Arguments { get; set; } = "";
     public string WorkDir { get; set; } = "";
-    /// <summary>비워 두면 대상을 그대로 연다. 지정하면 이 앱으로 대상을 연다.</summary>
-    public string RunWith { get; set; } = "";
     /// <summary>아이콘을 직접 지정할 때 (경로 또는 "경로,번호"). 비우면 대상의 아이콘.</summary>
     public string IconPath { get; set; } = "";
     /// <summary>0 보통 · 1 최소화 · 2 최대화</summary>
@@ -36,7 +34,7 @@ public sealed class ListItem
     public void CopyFrom(ListItem o)
     {
         Name = o.Name; Description = o.Description; Target = o.Target; Arguments = o.Arguments;
-        WorkDir = o.WorkDir; RunWith = o.RunWith; IconPath = o.IconPath; WindowStyle = o.WindowStyle;
+        WorkDir = o.WorkDir; IconPath = o.IconPath; WindowStyle = o.WindowStyle;
         RunAsAdmin = o.RunAsAdmin; ManualPath = o.ManualPath; WebUrl = o.WebUrl; Memo = o.Memo;
     }
 }
@@ -131,7 +129,7 @@ public sealed class ItemVM : INotifyPropertyChanged
         _iconLoaded = true;
         _iconSize = size;
         var t = Launcher.Expand(Item.Target);
-        _missing = t.Length > 0 && !Launcher.IsUrl(t) && !File.Exists(t) && !Directory.Exists(t);
+        _missing = t.Length > 0 && !Launcher.IsUrl(t) && !Launcher.IsShellApp(t) && !File.Exists(t) && !Directory.Exists(t);
         _icon = IconService.Get(Item, size);
     }
 
