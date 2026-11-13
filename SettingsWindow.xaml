@@ -6,7 +6,13 @@
         Background="{DynamicResource Bg}" Foreground="{DynamicResource Text}"
         FontFamily="Segoe UI, Malgun Gothic" FontSize="13" UseLayoutRounding="True"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="NoResize">
-    <StackPanel Margin="24,12,24,16">
+    <Grid>
+    <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,0,0">
+    <StackPanel Margin="24,12,24,0">
         <!-- 테마 -->
         <TextBlock Text="{l:T set_theme}" Style="{StaticResource SectionTitle}" Margin="0,8,0,0"/>
         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
@@ -91,11 +97,14 @@
         </Grid>
         <TextBlock Text="{l:T lists_folder_hint}" Foreground="{DynamicResource SubText}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
 
-        <Border BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Margin="0,20,0,0" Padding="0,10,0,0">
-            <Grid>
-                <TextBlock x:Name="VersionText" Foreground="{DynamicResource SubText}" VerticalAlignment="Center"/>
-                <Button Content="{l:T btn_close}" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right" IsCancel="True" IsDefault="True"/>
-            </Grid>
-        </Border>
+        <Border Height="16"/>
     </StackPanel>
+    </ScrollViewer>
+    <Border Grid.Row="1" BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Margin="24,0,24,16" Padding="0,10,0,0">
+        <Grid>
+            <TextBlock x:Name="VersionText" Foreground="{DynamicResource SubText}" VerticalAlignment="Center"/>
+            <Button Content="{l:T btn_close}" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right" IsCancel="True" IsDefault="True"/>
+        </Grid>
+    </Border>
+    </Grid>
 </Window>

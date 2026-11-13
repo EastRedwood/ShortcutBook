@@ -89,7 +89,7 @@
 
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type l:ItemVM}">
-                        <Grid Background="Transparent" ToolTip="{Binding RowTip}">
+                        <Grid Background="Transparent">
                             <Border x:Name="MarkTop" Height="2" VerticalAlignment="Top" Background="{DynamicResource Accent}" Visibility="Collapsed"/>
                             <Border x:Name="MarkBottom" Height="2" VerticalAlignment="Bottom" Background="{DynamicResource Accent}" Visibility="Collapsed"/>
                             <Grid Margin="{DynamicResource RowPadding}">
