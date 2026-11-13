@@ -61,6 +61,18 @@ public partial class App : Application
             return;
         }
 
+        // 빌드 뒤 자동 실행용: 탐색기 연결(.sbook)을 이 실행 파일로 갱신하고 끝낸다 (창·단일 인스턴스 없음).
+        if (args.Length > 0 && args[0] == "--register")
+        {
+            try
+            {
+                if (Settings.RegisterShell && Environment.ProcessPath is { Length: > 0 } me) { ShellRegistration.Register(me); Log.Write("--register: " + me); }
+            }
+            catch (Exception ex) { Log.Write("--register 실패: " + ex.Message); }
+            Shutdown();
+            return;
+        }
+
         // 단일 인스턴스: 이미 실행 중이면 그쪽으로 넘기고 끝낸다.
         _mutex = new Mutex(true, MutexName, out bool created);
         bool exitOnly = args.Length > 0 && args[0] == "--exit";
@@ -311,6 +323,36 @@ public partial class App : Application
 
     // ─────────────── 개발용: 창 그림 저장 ───────────────
 
+    /// <summary>제목 표시줄까지 포함한 창 전체를 그림 파일로 저장한다 (이 프로세스 자신의 창만, 화면 캡처 아님).</summary>
+    static bool PrintFullWindow(Window w, string output)
+    {
+        var hwnd = new WindowInteropHelper(w).Handle;
+        if (hwnd == IntPtr.Zero || !Native.GetWindowRect(hwnd, out var r)) return false;
+        int pw = r.Right - r.Left, ph = r.Bottom - r.Top;
+        if (pw <= 0 || ph <= 0) return false;
+        var screen = Native.GetDC(IntPtr.Zero);
+        var mem = Native.CreateCompatibleDC(screen);
+        var bmp = Native.CreateCompatibleBitmap(screen, pw, ph);
+        var old = Native.SelectObject(mem, bmp);
+        try
+        {
+            if (!Native.PrintWindow(hwnd, mem, 2 /* PW_RENDERFULLCONTENT */)) return false;
+            Native.SelectObject(mem, old);
+            var src = Imaging.CreateBitmapSourceFromHBitmap(bmp, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            var enc = new PngBitmapEncoder();
+            enc.Frames.Add(BitmapFrame.Create(src));
+            using var fs = File.Create(output);
+            enc.Save(fs);
+            Native.DwmGetWindowAttribute(hwnd, Native.DWMWA_USE_IMMERSIVE_DARK_MODE, out int d, sizeof(int));
+            Log.Write($"render {output}: 제목 표시줄 다크 속성={d}");
+            return true;
+        }
+        finally
+        {
+            Native.DeleteObject(bmp); Native.DeleteDC(mem); Native.ReleaseDC(IntPtr.Zero, screen);
+        }
+    }
+
     /// <summary>--render 종류 출력.png [목록.sbook]  (종류: main · edit · settings · help · start · memo)</summary>
     void RenderMode_(string[] args)
     {
@@ -351,6 +393,7 @@ public partial class App : Application
                 try
                 {
                     w.UpdateLayout();
+                    PrintFullWindow(w, output + ".frame.png"); // 제목 표시줄 확인용 (오프스크린이라 본문은 비어 보일 수 있음)
                     var dpi = VisualTreeHelper.GetDpi(w);
                     int pw = (int)Math.Ceiling(w.ActualWidth * dpi.DpiScaleX), ph = (int)Math.Ceiling(w.ActualHeight * dpi.DpiScaleY);
                     var rtb = new RenderTargetBitmap(pw, ph, 96 * dpi.DpiScaleX, 96 * dpi.DpiScaleY, PixelFormats.Pbgra32);

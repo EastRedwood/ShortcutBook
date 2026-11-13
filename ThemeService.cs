@@ -34,6 +34,22 @@ internal static class ThemeService
         catch { return false; }
     }
 
+    /// <summary>
+    /// 제목 표시줄(비클라이언트 영역)을 테마에 맞춘다. ThemeMode 만으로는 제목 표시줄이 바뀌지 않아서
+    /// 창마다 DWM 속성을 직접 지정해야 한다 (window\CLAUDE.md "다크 테마").
+    /// </summary>
+    public static void ApplyTitleBar(Window w)
+    {
+        try
+        {
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(w).Handle;
+            if (hwnd == IntPtr.Zero) return;
+            int dark = IsDark ? 1 : 0;
+            Native.DwmSetWindowAttribute(hwnd, Native.DWMWA_USE_IMMERSIVE_DARK_MODE, ref dark, sizeof(int));
+        }
+        catch (Exception ex) { Log.Write("제목 표시줄 테마 실패: " + ex.Message); }
+    }
+
     /// <summary>0 시스템 · 1 라이트 · 2 다크</summary>
     public static void Apply()
     {
@@ -50,9 +66,14 @@ internal static class ThemeService
             app.Resources[kv.Key] = b;
         }
 
+        foreach (Window w in app.Windows) ApplyTitleBar(w);
+
         if (!_hooked)
         {
             _hooked = true;
+            // 새로 열리는 모든 창에 제목 표시줄 테마를 적용한다.
+            EventManager.RegisterClassHandler(typeof(Window), FrameworkElement.LoadedEvent,
+                new RoutedEventHandler((s, _) => ApplyTitleBar((Window)s)));
             // 시스템 테마를 따를 때는 윈도우 설정이 바뀌면 같이 바꾼다.
             SystemEvents.UserPreferenceChanged += (_, _) =>
             {
