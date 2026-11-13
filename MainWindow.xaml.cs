@@ -47,7 +47,7 @@ public partial class MainWindow : Window
         _view.Filter = FilterItem;
         List.ItemsSource = _view;
         LoadList(path, doc);
-
+        ContentRendered += (_, _) =>
         Loaded += (_, _) =>
         {
             var dpi = VisualTreeHelper.GetDpi(this);

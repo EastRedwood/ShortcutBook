@@ -10,9 +10,18 @@ namespace ShortcutBook;
 internal static class IconService
 {
     public static double Scale = 1.0;
-    static readonly Dictionary<string, ImageSource?> Cache = new();
+    // 시작할 때 백그라운드 스레드가 미리 읽어 두므로 스레드에 안전한 사전을 쓴다 (읽은 그림은 Freeze 되어 있다)
+    static readonly System.Collections.Concurrent.ConcurrentDictionary<string, ImageSource?> Cache = new();
 
     public static void Clear() => Cache.Clear();
+
+    [DllImport("user32.dll")] static extern uint GetDpiForSystem();
+
+    /// <summary>창이 생기기 전(미리 읽기)에는 창의 배율을 모르므로 시스템 배율로 읽는다. 창이 생긴 뒤 배율이 다르면 MainWindow 가 다시 읽는다.</summary>
+    public static void UseSystemScale()
+    {
+        try { Scale = GetDpiForSystem() / 96.0; } catch { }
+    }
 
     public static ImageSource? Get(ListItem it, int logicalSize)
     {

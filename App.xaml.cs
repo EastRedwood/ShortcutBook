@@ -37,6 +37,7 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        Task.Run(WarmUpText); // 글꼴·글자 그리기 초기화를 UI 스레드와 나란히 해 둔다
         RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
         base.OnStartup(e);
 
@@ -50,6 +51,12 @@ public partial class App : Application
 
         var args = e.Args;
         Settings = AppSettings.Load();
+        if (args.Length > 0 && !args[0].StartsWith("--", StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(args[0]))
+        {
+            // 창을 만들고 그리는 동안 목록의 아이콘을 다른 스레드에서 미리 읽어 둔다 (시작 시간 단축)
+            var first = args[0];
+            Task.Run(() => PrefetchIcons(first));
+        }
         Loc.Instance.Load(Settings.Language);
         ThemeService.Apply();
 
@@ -130,8 +137,41 @@ public partial class App : Application
         r["ExtraWidth"] = s.btn * 3 + 6; // 매뉴얼·웹·메모 단추 자리(항상 확보): 줄마다 이름/설명 열이 같은 위치에 정렬되게
         r["RowPadding"] = s.pad;
         ApplyNameWidth();
-        IconService.Clear();
+        // 처음 적용할 때는 비우지 않는다 (시작 때 미리 읽어 둔 아이콘을 쓰려고). 크기를 바꿨을 때만 옛 크기의 그림을 버린다.
+        if (_appliedViewSize >= 0 && _appliedViewSize != Settings.ViewSize) IconService.Clear();
+        _appliedViewSize = Settings.ViewSize;
         ViewChanged?.Invoke();
+    }
+
+    static int _appliedViewSize = -1;
+
+    /// <summary>처음 글자를 재거나 그릴 때 드는 글꼴 시스템 초기화(DirectWrite 등)를 다른 스레드에서 미리 한다.</summary>
+    static void WarmUpText()
+    {
+        try
+        {
+            foreach (var name in new[] { "Segoe UI", "Malgun Gothic", "Segoe MDL2 Assets" })
+            {
+                var ft = new FormattedText("가Aa", System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
+                    new Typeface(name), 13, Brushes.Black, 1.0);
+                _ = ft.Width;
+            }
+        }
+        catch { }
+    }
+
+    static void PrefetchIcons(string listPath)
+    {
+        try
+        {
+            listPath = Path.GetFullPath(listPath);
+            if (!listPath.EndsWith(AppInfo.Extension, StringComparison.OrdinalIgnoreCase) || !File.Exists(listPath)) return;
+            var doc = ListDocument.Load(listPath);
+            IconService.UseSystemScale();
+            int size = IconLogicalSize;
+            foreach (var it in doc.Items.Take(40)) IconService.Get(it, size);
+        }
+        catch (Exception ex) { Log.Write("아이콘 미리 읽기 실패: " + ex.Message); }
     }
 
     public static void ApplyNameWidth()
@@ -188,11 +228,11 @@ public partial class App : Application
         if (w == null) return;
         _lists[path] = w;
         w.Closed += (_, _) => { _lists.Remove(w.ListPath); MemoryTrimLater(); };
-        Settings.AddRecent(path);
-        Settings.Save();
         w.Show();
         Bring(w);
         if (_start != null) { _start.Close(); }
+        // 최근 목록 저장(파일 쓰기)은 창이 뜬 뒤에 한다
+        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => { Settings.AddRecent(path); Settings.Save(); }));
     }
 
     /// <summary>

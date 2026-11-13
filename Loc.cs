@@ -53,7 +53,8 @@ public sealed class Loc : INotifyPropertyChanged
     public static string DefaultCode()
     {
         var two = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-        return Available().Any(a => a.Code.Equals(two, StringComparison.OrdinalIgnoreCase)) ? two : "en";
+        // 언어 파일이 있는지만 본다 (모든 파일을 열어 표시 이름까지 읽을 필요가 없다)
+        return File.Exists(Path.Combine(LangDir, two + ".json")) ? two : "en";
     }
 
     public void Load(string? code)
