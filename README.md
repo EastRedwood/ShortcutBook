@@ -42,7 +42,7 @@
 
 ## 파일
 
-- 설정·로그: `%AppData%\ShortcutBook\settings.json`, `log.txt` (환경 변수 `SHORTCUTBOOK_DATA_DIR` 로 폴더 변경 가능)
+- 설정·로그: `%AppData%\ShortcutBook\<main|edit|settings|help|start|memo|message>.json`, `log.txt` (환경 변수 `SHORTCUTBOOK_DATA_DIR` 로 폴더 변경 가능)
 - 목록 파일 형식 예:
 
 ```json
@@ -59,6 +59,6 @@
 | `--exit` | 실행 중인 인스턴스를 종료 |
 | `--new-link <폴더 또는 경로> [--name 이름]` | 탐색기 "새로 만들기 > 바로가기 목록 바로가기"가 호출하는 동작 (이름 창, 프로그램 폴더 Lists 에 목록 파일, 그 자리에 .lnk). `--name` 을 주면 이름 창을 건너뜀(시험용) |
 | `--register` | 탐색기 연결(.sbook)을 이 실행 파일로 갱신하고 종료 (빌드 후 자동 실행됨, 설정에서 연동을 끈 경우 건드리지 않음) |
-| `--render <main\|edit\|settings\|help\|start\|memo> <출력.png> [목록.sbook 또는 edit 의 대상 파일]` | 창 본문을 그림 파일로 저장하고 종료 (제목 표시줄 포함 창 전체는 `출력.png.frame.png` 로 함께 저장). 입력 장치 없이 화면 확인용, 탐색기 등록은 건드리지 않음 |
+| `--render <main|edit|settings|help|start|memo|message>\|edit\|settings\|help\|start\|memo> <출력.png> [목록.sbook 또는 edit 의 대상 파일]` | 창 본문을 그림 파일로 저장하고 종료 (제목 표시줄 포함 창 전체는 `출력.png.frame.png` 로 함께 저장). 입력 장치 없이 화면 확인용, 탐색기 등록은 건드리지 않음 |
 
 단일 인스턴스입니다. 이미 실행 중일 때 다른 목록을 열면 기존 프로세스에 새 창으로 열립니다 (같은 목록이면 그 창을 앞으로 가져옴).
