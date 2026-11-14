@@ -23,7 +23,7 @@
         </WrapPanel>
 
         <!-- 이름 칸 너비 -->
-        <TextBlock Text="{l:T set_name_width}" Style="{StaticResource SectionTitle}"/>
+        <l:SectionHeader Title="{l:T set_name_width}" Hint="{l:T name_width_hint}"/>
         <Grid Margin="0,8,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -33,10 +33,9 @@
                     IsSnapToTickEnabled="True" ValueChanged="OnNameWidthChanged"/>
             <TextBlock x:Name="NameWidthText" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center"/>
         </Grid>
-        <TextBlock Text="{l:T name_width_hint}" Foreground="{DynamicResource SubText}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
 
         <!-- 목록 크기 -->
-        <TextBlock Text="{l:T set_size}" Style="{StaticResource SectionTitle}"/>
+        <l:SectionHeader Title="{l:T set_size}"/>
         <WrapPanel Margin="0,8,0,0">
             <RadioButton x:Name="Size0" Content="{l:T size_small}" GroupName="size" Margin="0,0,18,0" Checked="OnSizeChecked" Tag="0"/>
             <RadioButton x:Name="Size1" Content="{l:T size_medium}" GroupName="size" Margin="0,0,18,0" Checked="OnSizeChecked" Tag="1"/>
@@ -45,31 +44,28 @@
         </WrapPanel>
 
         <!-- 다른 목록 열기 -->
-        <TextBlock Text="{l:T set_open_mode}" Style="{StaticResource SectionTitle}"/>
+        <l:SectionHeader Title="{l:T set_open_mode}" Hint="{l:T open_hint}"/>
         <StackPanel Margin="0,8,0,0">
             <RadioButton x:Name="OpenReplace" Content="{l:T open_replace}" GroupName="open" Margin="0,2" Checked="OnOpenModeChecked" Tag="0"/>
             <RadioButton x:Name="OpenNew" Content="{l:T open_new}" GroupName="open" Margin="0,2" Checked="OnOpenModeChecked" Tag="1"/>
         </StackPanel>
-        <TextBlock Text="{l:T open_hint}" Foreground="{DynamicResource SubText}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
 
         <!-- 같은 대상 등록 -->
-        <TextBlock Text="{l:T set_dup}" Style="{StaticResource SectionTitle}"/>
+        <l:SectionHeader Title="{l:T set_dup}" Hint="{l:T dup_hint}"/>
         <StackPanel Margin="0,8,0,0">
             <RadioButton x:Name="Dup0" Content="{l:T dup_add}" GroupName="dup" Margin="0,2" Checked="OnDupChecked" Tag="0"/>
             <RadioButton x:Name="Dup1" Content="{l:T dup_skip}" GroupName="dup" Margin="0,2" Checked="OnDupChecked" Tag="1"/>
             <RadioButton x:Name="Dup2" Content="{l:T dup_overwrite}" GroupName="dup" Margin="0,2" Checked="OnDupChecked" Tag="2"/>
         </StackPanel>
-        <TextBlock Text="{l:T dup_hint}" Foreground="{DynamicResource SubText}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
 
         <!-- 웹 아이콘 -->
-        <TextBlock Text="{l:T set_web_icon}" Style="{StaticResource SectionTitle}"/>
+        <l:SectionHeader Title="{l:T set_web_icon}" Hint="{l:T web_icon_hint}"/>
         <CheckBox x:Name="WebIconCheck" Margin="0,8,0,0" Checked="OnWebIconToggled" Unchecked="OnWebIconToggled">
             <TextBlock Text="{l:T set_web_icon_check}" TextWrapping="Wrap"/>
         </CheckBox>
-        <TextBlock Text="{l:T web_icon_hint}" Foreground="{DynamicResource SubText}" FontSize="12" Margin="22,4,0,0" TextWrapping="Wrap"/>
 
         <!-- 수정 단축키 -->
-        <TextBlock Text="{l:T set_edit_key}" Style="{StaticResource SectionTitle}"/>
+        <l:SectionHeader Title="{l:T set_edit_key}" Hint="{l:T edit_key_hint}"/>
         <Grid Margin="0,8,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="160"/>
@@ -80,21 +76,20 @@
                      PreviewKeyDown="OnEditKeyDown" ToolTip="{l:T edit_key_tip}"/>
             <Button Grid.Column="1" Content="{l:T btn_default_icon}" Style="{StaticResource SecondaryButton}" MinWidth="0" Margin="8,0,0,0" Click="OnEditKeyDefault"/>
         </Grid>
-        <TextBlock Text="{l:T edit_key_hint}" Foreground="{DynamicResource SubText}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
 
         <!-- 언어 -->
-        <TextBlock Text="{l:T set_language}" Style="{StaticResource SectionTitle}"/>
+        <l:SectionHeader Title="{l:T set_language}"/>
         <ComboBox x:Name="LangCombo" Margin="0,8,0,0" Padding="6,4" SelectionChanged="OnLangChanged"/>
 
         <!-- 탐색기 연동 -->
-        <TextBlock Text="{l:T set_shell}" Style="{StaticResource SectionTitle}"/>
+        <l:SectionHeader Title="{l:T set_shell}"/>
         <CheckBox x:Name="ShellCheck" Margin="0,8,0,0" Checked="OnShellToggled" Unchecked="OnShellToggled">
             <TextBlock Text="{l:T set_shell_check}" TextWrapping="Wrap"/>
         </CheckBox>
         <TextBlock x:Name="ShellStatus" Foreground="{DynamicResource SubText}" FontSize="12" Margin="22,4,0,0" TextWrapping="Wrap"/>
 
         <!-- 목록 파일 폴더 -->
-        <TextBlock Text="{l:T set_lists_folder}" Style="{StaticResource SectionTitle}"/>
+        <l:SectionHeader Title="{l:T set_lists_folder}" Hint="{l:T lists_folder_hint}"/>
         <Grid Margin="0,8,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -103,7 +98,6 @@
             <TextBlock x:Name="ListsPath" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SubText}"/>
             <Button Grid.Column="1" Content="{l:T btn_open_folder}" Style="{StaticResource SecondaryButton}" MinWidth="0" Margin="8,0,0,0" Click="OnOpenListsFolder"/>
         </Grid>
-        <TextBlock Text="{l:T lists_folder_hint}" Foreground="{DynamicResource SubText}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
 
         <Border Height="16"/>
     </StackPanel>
