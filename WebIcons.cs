@@ -3,6 +3,8 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using SharpVectors.Converters;
+using SharpVectors.Renderers.Wpf;
 
 namespace ShortcutBook;
 
@@ -31,15 +33,19 @@ internal static partial class WebIcons
     static string FilePath(string host) => Path.Combine(Dir, host + ".img");
 
     /// <summary>대상이 http(s) 웹 주소이면 그 사이트의 기준 주소(origin)를 돌려준다.</summary>
-    public static bool TryOrigin(string? target, out Uri origin)
+    public static bool TryOrigin(string? target, out Uri origin) => TryTarget(target, out origin, out _);
+
+    /// <summary>origin 은 사이트의 기준 주소, page 는 사용자가 입력한 전체 주소(경로 포함, 조각 제외).</summary>
+    public static bool TryTarget(string? target, out Uri origin, out Uri page)
     {
-        origin = null!;
+        origin = page = null!;
         var t = Launcher.Expand(target);
         if (t.Length == 0 || !Launcher.IsUrl(t)) return false;
         if (!Uri.TryCreate(Launcher.NormalizeUrl(t), UriKind.Absolute, out var u)) return false;
         if (u.Scheme != Uri.UriSchemeHttp && u.Scheme != Uri.UriSchemeHttps) return false;
         if (!u.Host.Contains('.')) return false; // 입력 도중의 짧은 이름으로 요청을 보내지 않는다
         origin = new Uri(u.GetLeftPart(UriPartial.Authority));
+        page = new Uri(u.GetLeftPart(UriPartial.Query)); // #조각 제외
         return true;
     }
 
@@ -76,34 +82,43 @@ internal static partial class WebIcons
     /// 저장된 아이콘이 없으면 사이트에서 한 번 받아 본다 (백그라운드). 수정 창에서 주소를 입력했을 때와 수정 창을 열었을 때만 부른다.
     /// 인터넷에 연결되지 않았거나 아이콘이 없으면 그냥 끝나며, 스스로 다시 시도하지 않는다.
     /// </summary>
-    public static void Request(Uri origin)
+    public static void Request(Uri origin, Uri? page = null)
     {
         var host = origin.Host;
         try { if (File.Exists(FilePath(host))) return; }
         catch { return; }
         lock (Pending) { if (!Pending.Add(host)) return; }
-        _ = Task.Run(() => FetchAsync(origin));
+        _ = Task.Run(() => FetchAsync(origin, page));
     }
 
-    static async Task FetchAsync(Uri origin)
+    static async Task FetchAsync(Uri origin, Uri? page)
     {
         var host = origin.Host;
         bool saved = false;
         await Gate.WaitAsync();
         try
         {
+            // 입력한 주소의 페이지를 먼저, 그다음 사이트 홈페이지에서 아이콘 안내(<link rel="icon">)를 찾고, 마지막에 /favicon.ico 를 본다.
+            // (예: 홈페이지는 비어 있고 /a2dp/ 아래 페이지에만 아이콘이 적혀 있는 사이트)
             var candidates = new List<Uri>();
-            var html = await GetBytesAsync(origin, 128 * 1024);
-            if (html != null) candidates.AddRange(FindLinks(System.Text.Encoding.UTF8.GetString(html), origin));
+            var pages = new List<Uri>();
+            if (page != null && page.AbsolutePath.Length > 1) pages.Add(page);
+            pages.Add(origin);
+            foreach (var p in pages.DistinctBy(u => u.AbsoluteUri))
+            {
+                var html = await GetBytesAsync(p, 128 * 1024);
+                if (html != null) candidates.AddRange(FindLinks(System.Text.Encoding.UTF8.GetString(html), p));
+            }
             candidates.Add(new Uri(origin, "/favicon.ico"));
 
             foreach (var c in candidates.DistinctBy(u => u.AbsoluteUri))
             {
                 var bytes = await GetBytesAsync(c, 1024 * 1024);
                 if (bytes == null || bytes.Length < 16) continue;
-                try { if (Decode(bytes, 32) == null) continue; } catch { continue; } // 그림이 아니면(예: 오류 페이지) 건너뛴다
+                var store = ToStorable(bytes);
+                if (store == null) continue; // 그림이 아니면(예: 오류 페이지) 건너뛴다
                 Directory.CreateDirectory(Dir);
-                File.WriteAllBytes(FilePath(host), bytes);
+                File.WriteAllBytes(FilePath(host), store);
                 saved = true;
                 break;
             }
@@ -116,6 +131,65 @@ internal static partial class WebIcons
         }
 
         if (saved) Application.Current?.Dispatcher.BeginInvoke(new Action(() => Fetched?.Invoke(host)));
+    }
+
+    /// <summary>받은 바이트를 저장할 그림으로 바꾼다. 래스터(PNG/ICO/…)는 읽을 수 있으면 그대로, SVG 는 PNG 로 그려서. 못 쓰면 null.</summary>
+    static byte[]? ToStorable(byte[] bytes)
+    {
+        try
+        {
+            if (LooksLikeSvg(bytes)) return SvgToPng(bytes);
+            return Decode(bytes, 32) == null ? null : bytes;
+        }
+        catch { return null; }
+    }
+
+    static bool LooksLikeSvg(byte[] bytes)
+    {
+        var head = System.Text.Encoding.UTF8.GetString(bytes, 0, Math.Min(bytes.Length, 1024));
+        return head.Contains("<svg", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>SVG 를 128px 정사각형 PNG 로 그린다. WPF 가 SVG 를 읽지 못해서 SharpVectors 를 쓰고, 그림 그리기는 UI 스레드에서 한다.</summary>
+    static byte[]? SvgToPng(byte[] svg)
+    {
+        var app = Application.Current;
+        if (app == null) return null;
+        return app.Dispatcher.Invoke(() =>
+        {
+            try
+            {
+                var settings = new WpfDrawingSettings { IncludeRuntime = false, TextAsGeometry = true, OptimizePath = true };
+                using var ms = new MemoryStream(svg);
+                var dg = new FileSvgReader(settings).Read(ms);
+                if (dg == null) return null;
+                var b = dg.Bounds;
+                if (b.IsEmpty || b.Width <= 0 || b.Height <= 0) return null;
+
+                const int N = 128;
+                double scale = N / Math.Max(b.Width, b.Height);
+                var dv = new DrawingVisual();
+                using (var dc = dv.RenderOpen())
+                {
+                    // 그림을 칸 가운데에 맞춘다 (먼저 크기를 맞추고 그다음 이동)
+                    dc.PushTransform(new TranslateTransform((N - b.Width * scale) / 2 - b.X * scale, (N - b.Height * scale) / 2 - b.Y * scale));
+                    dc.PushTransform(new ScaleTransform(scale, scale));
+                    dc.DrawDrawing(dg);
+                }
+                var rtb = new RenderTargetBitmap(N, N, 96, 96, PixelFormats.Pbgra32);
+                rtb.Render(dv);
+                var enc = new PngBitmapEncoder();
+                enc.Frames.Add(BitmapFrame.Create(rtb));
+                using var outMs = new MemoryStream();
+                enc.Save(outMs);
+                return outMs.ToArray();
+            }
+            catch (Exception ex)
+            {
+                Log.Write("SVG 아이콘 변환 실패: " + ex.Message);
+                return null;
+            }
+        });
     }
 
     /// <summary>
@@ -181,7 +255,7 @@ internal static partial class WebIcons
     [GeneratedRegex(@"(\w[\w-]*)\s*=\s*(?:""([^""]*)""|'([^']*)')", RegexOptions.IgnoreCase)]
     private static partial Regex Attr();
 
-    /// <summary>홈페이지의 &lt;link rel="icon"&gt; 들을 후보로 모은다 (큰 아이콘 먼저, svg 는 읽을 수 없어 제외).</summary>
+    /// <summary>페이지의 &lt;link rel="icon"&gt; 들을 후보로 모은다 (큰 아이콘 먼저). 상대 주소는 그 페이지 기준으로 푼다.</summary>
     static IEnumerable<Uri> FindLinks(string html, Uri origin)
     {
         var found = new List<(Uri Url, int Size, int Rank)>();
@@ -199,11 +273,13 @@ internal static partial class WebIcons
                 }
             }
             if (rel == null || href == null || !rel.Contains("icon")) continue;
-            if (href.Contains(".svg", StringComparison.OrdinalIgnoreCase) || href.StartsWith("data:", StringComparison.OrdinalIgnoreCase)) continue;
+            if (href.StartsWith("data:", StringComparison.OrdinalIgnoreCase)) continue;
             if (!Uri.TryCreate(origin, href, out var url) || (url.Scheme != "http" && url.Scheme != "https")) continue;
             int size = 0;
             if (sizes != null) int.TryParse(sizes.Split('x', 'X')[0], out size);
-            found.Add((url, size, rel.Contains("apple-touch") ? 1 : 0)); // 일반 아이콘을 먼저, 애플 터치 아이콘은 뒤에
+            // 순서: 일반 래스터 아이콘 > SVG > 애플 터치 아이콘 (SVG 는 변환이 실패할 수 있어 래스터 뒤)
+            int rank = rel.Contains("apple-touch") ? 2 : url.AbsolutePath.EndsWith(".svg", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+            found.Add((url, size, rank));
         }
         return found.OrderBy(f => f.Rank).ThenByDescending(f => f.Size).Select(f => f.Url);
     }

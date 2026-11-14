@@ -537,13 +537,13 @@ public partial class MainWindow : Window
         // 같은 경로·주소 설정(기본: 등록 제외)을 그대로 따른다
         int added = 0, skipped = 0;
         ItemVM? last = null;
-        var origins = new Dictionary<string, Uri>(StringComparer.OrdinalIgnoreCase);
+        var origins = new Dictionary<string, (Uri Origin, Uri Page)>(StringComparer.OrdinalIgnoreCase);
         foreach (var it in items)
         {
             var (vm, skip) = Place(it);
             if (skip) { skipped++; continue; }
             added++; last = vm;
-            if (WebIcons.TryOrigin(it.Target, out var o)) origins[o.Host] = o;
+            if (WebIcons.TryTarget(it.Target, out var o, out var pg)) origins.TryAdd(o.Host, (o, pg)); // 사이트마다 처음 것의 페이지를 본다
         }
         if (added > 0)
         {
@@ -552,7 +552,7 @@ public partial class MainWindow : Window
             if (last != null) List.ScrollIntoView(last);
             // 설정에서 웹 아이콘 가져오기가 켜져 있으면 가져온 북마크의 사이트 아이콘도 받아 온다 (사이트마다 한 번, 한 번에 4개씩)
             if (App.Settings.FetchWebIcons)
-                foreach (var o in origins.Values) WebIcons.Request(o);
+                foreach (var (o, pg) in origins.Values) WebIcons.Request(o, pg);
         }
         if (skipped > 0)
             MessageBox.Show(this, Loc.F("bm_done_skipped", added, skipped), AppInfo.Name, MessageBoxButton.OK, MessageBoxImage.Information);
