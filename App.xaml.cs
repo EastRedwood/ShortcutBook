@@ -429,7 +429,7 @@ public partial class App : Application
                         item.ManualPath = item.ManualPath.Length == 0 ? @"C:\Windows\System32\notepad.exe" : item.ManualPath;
                         item.WebUrl = "https://example.com/manual";
                         item.Memo = "메모 예시\n두 번째 줄";
-                        w = new ItemEditWindow(item, isNew: false);
+                        w = new ItemEditWindow(item, isNew: list == null); // 대상 파일을 주지 않으면 '새 항목' 모양
                         break;
                     }
                 case "settings": w = new SettingsWindow(); break;

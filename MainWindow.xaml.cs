@@ -311,6 +311,7 @@ public partial class MainWindow : Window
     {
         var dlg = new ItemEditWindow(seed, isNew: true) { Owner = this };
         if (dlg.ShowDialog() != true || dlg.Deleted) { WebIcons.Cleanup(dlg.RequestedHosts); return; } // 취소했으면 이 창에서 받은 아이콘을 치운다
+        if (dlg.ImportedItems != null) { ImportItems(dlg.ImportedItems); WebIcons.Cleanup(dlg.RequestedHosts); return; } // 북마크를 여러 개 골랐다
         var (vm, skipped) = Place(dlg.Result);
         if (skipped)
         {
@@ -529,45 +530,29 @@ public partial class MainWindow : Window
 
     // ─────────────── 설정 · 도움말 ───────────────
 
-    // ─────────────── 북마크 HTML 에서 골라 가져오기 ───────────────
+    // ─────────────── 북마크 여러 개 가져오기 (항목 추가 창의 [북마크] 단추에서 여러 개를 골랐을 때) ───────────────
 
-    void OnImportBookmarks(object sender, RoutedEventArgs e)
+    void ImportItems(List<ListItem> items)
     {
-        var dlg = new Microsoft.Win32.OpenFileDialog
-        {
-            Filter = Loc.T("bm_filter") + "|*.html;*.htm|" + Loc.T("filter_all") + "|*.*",
-            CheckFileExists = true,
-        };
-        if (dlg.ShowDialog(this) != true) return;
-
-        BmNode root;
-        try { root = BookmarkHtml.Parse(File.ReadAllText(dlg.FileName, System.Text.Encoding.UTF8)); }
-        catch (Exception ex)
-        {
-            Log.Write("북마크 파일 읽기 실패 " + dlg.FileName + ": " + ex.Message);
-            ShowError(Loc.F("bm_read_fail", ex.Message));
-            return;
-        }
-        if (root.Leaves().Any() == false) { ShowError(Loc.T("bm_none")); return; }
-
-        var win = new BookmarkImportWindow(root, dlg.FileName) { Owner = this };
-        if (win.ShowDialog() != true || win.Result.Count == 0) return;
-
-        // 같은 경로·주소 설정(기본: 등록 제외)을 그대로 따른다. 사이트 아이콘은 여기서 받지 않는다 (수정 창을 열 때 받는다).
+        // 같은 경로·주소 설정(기본: 등록 제외)을 그대로 따른다
         int added = 0, skipped = 0;
         ItemVM? last = null;
-        foreach (var (name, url, folder) in win.Result)
+        var origins = new Dictionary<string, Uri>(StringComparer.OrdinalIgnoreCase);
+        foreach (var it in items)
         {
-            var it = new ListItem { Name = name, Target = url, Description = win.FolderAsDescription ? folder : "" };
             var (vm, skip) = Place(it);
-            if (skip) skipped++;
-            else { added++; last = vm; }
+            if (skip) { skipped++; continue; }
+            added++; last = vm;
+            if (WebIcons.TryOrigin(it.Target, out var o)) origins[o.Host] = o;
         }
         if (added > 0)
         {
             Save();
             UpdateEmpty();
             if (last != null) List.ScrollIntoView(last);
+            // 설정에서 웹 아이콘 가져오기가 켜져 있으면 가져온 북마크의 사이트 아이콘도 받아 온다 (사이트마다 한 번, 한 번에 4개씩)
+            if (App.Settings.FetchWebIcons)
+                foreach (var o in origins.Values) WebIcons.Request(o);
         }
         if (skipped > 0)
             MessageBox.Show(this, Loc.F("bm_done_skipped", added, skipped), AppInfo.Name, MessageBoxButton.OK, MessageBoxImage.Information);

@@ -14,6 +14,33 @@ public partial class BookmarkImportWindow : Window
     public List<(string Name, string Url, string Folder)> Result { get; } = new();
     public bool FolderAsDescription { get; private set; }
 
+    /// <summary>북마크 HTML 파일을 고르고 읽어서 선택 창을 연다. 사용자가 고른 것이 있으면 그 창을, 아니면 null 을 돌려준다.</summary>
+    public static BookmarkImportWindow? Pick(Window owner)
+    {
+        var dlg = new Microsoft.Win32.OpenFileDialog
+        {
+            Filter = Loc.T("bm_filter") + "|*.html;*.htm|" + Loc.T("filter_all") + "|*.*",
+            CheckFileExists = true,
+        };
+        if (dlg.ShowDialog(owner) != true) return null;
+
+        BmNode root;
+        try { root = BookmarkHtml.Parse(File.ReadAllText(dlg.FileName, System.Text.Encoding.UTF8)); }
+        catch (Exception ex)
+        {
+            Log.Write("북마크 파일 읽기 실패 " + dlg.FileName + ": " + ex.Message);
+            MessageBox.Show(owner, Loc.F("bm_read_fail", ex.Message), AppInfo.Name, MessageBoxButton.OK, MessageBoxImage.Warning);
+            return null;
+        }
+        if (!root.Leaves().Any())
+        {
+            MessageBox.Show(owner, Loc.T("bm_none"), AppInfo.Name, MessageBoxButton.OK, MessageBoxImage.Warning);
+            return null;
+        }
+        var win = new BookmarkImportWindow(root, dlg.FileName) { Owner = owner };
+        return win.ShowDialog() == true && win.Result.Count > 0 ? win : null;
+    }
+
     public BookmarkImportWindow(BmNode root, string fileName)
     {
         InitializeComponent();

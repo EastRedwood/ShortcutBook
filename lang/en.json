@@ -144,8 +144,7 @@
   "app_kind_program": "Program",
   "set_web_icon": "Web address icons",
   "set_web_icon_check": "Download new site icons from the internet when the target is a web address",
-  "web_icon_hint": "The site is checked once, only when you enter an address or open the edit window; it does not keep retrying when offline. Turning this off only stops new downloads: icons already downloaded keep being used. Deleting a shortcut also deletes its saved icon. The manual / web address buttons always use the default web icon.",
-  "tip_import": "Import bookmarks (pick from a bookmarks HTML file)",
+  "web_icon_hint": "The site is checked once, only when you enter an address, open the edit window, or import bookmarks; it does not keep retrying when offline. Turning this off only stops new downloads: icons already downloaded keep being used. Deleting a shortcut also deletes its saved icon. The manual / web address buttons always use the default web icon.",
   "bm_title": "Import bookmarks",
   "bm_filter": "Bookmarks HTML file",
   "bm_hint": "Check only the bookmarks you want from the HTML file exported by your browser. Checking a folder selects everything inside it. Duplicates follow the 'When registering the same path or address' setting.",
@@ -156,5 +155,7 @@
   "btn_import": "Import",
   "bm_none": "No bookmarks were found in this file. Make sure it is a bookmarks HTML file exported from a browser.",
   "bm_read_fail": "Could not read the bookmarks file:\n{0}",
-  "bm_done_skipped": "Added {0}.\n{1} skipped because they were already in the list."
+  "bm_done_skipped": "Added {0}.\n{1} skipped because they were already in the list.",
+  "btn_bookmark": "Bookmarks",
+  "btn_bookmark_tip": "Import from a bookmarks HTML file exported by your browser. Pick one to fill this window, or several to add them all to the list right away."
 }

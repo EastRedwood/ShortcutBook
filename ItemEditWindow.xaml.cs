@@ -40,6 +40,7 @@ public partial class ItemEditWindow : Window
 
         Title = Loc.T(isNew ? "add_title" : "edit_title");
         DeleteBtn.Visibility = isNew ? Visibility.Collapsed : Visibility.Visible;
+        BookmarkBtn.Visibility = isNew ? Visibility.Visible : Visibility.Collapsed; // 북마크 가져오기는 새 항목을 추가할 때만
         UpdatePreview(allowFetch: false); // 열었을 때의 확인은 위 대상 칸 설정이 일으키는 입력 대기(0.7초) 뒤에 한 번 한다
         WebIcons.Fetched += OnWebIconFetched;
         Closed += (_, _) => { WebIcons.Fetched -= OnWebIconFetched; _webTimer?.Stop(); };
@@ -149,6 +150,31 @@ public partial class ItemEditWindow : Window
     {
         var f = PickFolder(this);
         if (f != null) WorkDirBox.Text = f;
+    }
+
+    /// <summary>북마크를 여러 개 골랐을 때 (이 창의 내용은 쓰지 않고 이 항목들을 목록에 추가한다). 하나만 골랐으면 null.</summary>
+    public List<ListItem>? ImportedItems { get; private set; }
+
+    /// <summary>북마크 HTML 파일에서 골라 가져온다. 하나를 고르면 이 창의 이름·대상을 채우고, 여러 개를 고르면 모두 목록에 추가한다.</summary>
+    void OnPickBookmarks(object sender, RoutedEventArgs e)
+    {
+        var win = BookmarkImportWindow.Pick(this);
+        if (win == null) return;
+        var items = win.Result.Select(r => new ListItem
+        {
+            Name = r.Name, Target = r.Url, Description = win.FolderAsDescription ? r.Folder : "",
+        }).ToList();
+
+        if (items.Count > 1)
+        {
+            ImportedItems = items;
+            DialogResult = true;
+            return;
+        }
+        var one = items[0];
+        TargetBox.Text = one.Target;
+        if (NameBox.Text.Trim().Length == 0) NameBox.Text = one.Name;
+        if (DescBox.Text.Trim().Length == 0 && one.Description.Length > 0) DescBox.Text = one.Description;
     }
 
     /// <summary>설치된 앱(스토어 앱 포함)을 목록에서 골라 대상으로 삼는다.</summary>
