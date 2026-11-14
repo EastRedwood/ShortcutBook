@@ -23,7 +23,8 @@ internal static class IconService
         try { Scale = GetDpiForSystem() / 96.0; } catch { }
     }
 
-    public static ImageSource? Get(ListItem it, int logicalSize, bool allowFetch = false)
+    /// <param name="cache">false 면 그림을 캐시에 남기지 않는다 (앱 선택 창처럼 한 번 보고 마는 수백 개의 아이콘이 상주 메모리에 남지 않게)</param>
+    public static ImageSource? Get(ListItem it, int logicalSize, bool allowFetch = false, bool cache = true)
     {
         // 대상이 웹 주소이고 아이콘을 직접 지정하지 않았다면 그 사이트의 아이콘(파비콘)을 쓴다
         if (string.IsNullOrWhiteSpace(it.IconPath) && WebIcons.TryTarget(it.Target, out var origin, out var page))
@@ -35,7 +36,7 @@ internal static class IconService
         var key = src + "|" + px;
         if (Cache.TryGetValue(key, out var hit)) return hit;
         var img = Load(src, px);
-        Cache[key] = img;
+        if (cache) Cache[key] = img;
         return img;
     }
 

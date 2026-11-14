@@ -42,20 +42,30 @@ internal static partial class WebIcons
 
     // 이번 실행 중에 받았거나 옛 폴더에서 읽은 사이트별 아이콘 (80px 이하 PNG 바이트). 파일로는 저장하지 않는다.
     static readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte[]> Memory = new(StringComparer.OrdinalIgnoreCase);
+    // 옛 폴더에 파일이 없던 사이트 (줄마다 같은 파일 확인을 되풀이하지 않으려고)
+    static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> NoLegacy = new(StringComparer.OrdinalIgnoreCase);
+    const int MemoryLimit = 300; // 상주 프로그램이라 이번 실행 중 모아 두는 양에 상한을 둔다
 
     /// <summary>이 사이트의 아이콘 바이트 (이번 실행 중 받은 것, 없으면 옛 폴더의 것). 없으면 null.</summary>
     public static byte[]? Lookup(string host)
     {
         if (Memory.TryGetValue(host, out var b)) return b;
+        if (NoLegacy.ContainsKey(host)) return null;
         try
         {
             var f = LegacyFile(host);
-            if (!File.Exists(f)) return null;
+            if (!File.Exists(f)) { NoLegacy[host] = true; return null; }
             var n = Normalize(File.ReadAllBytes(f));
-            if (n != null) Memory[host] = n;
+            if (n != null) Remember(host, n);
             return n;
         }
         catch (Exception ex) { Log.Write("옛 웹 아이콘 읽기 실패 " + host + ": " + ex.Message); return null; }
+    }
+
+    static void Remember(string host, byte[] png)
+    {
+        if (Memory.Count >= MemoryLimit) Memory.Clear(); // 항목에 이미 저장되므로 비워도 다시 받을 일은 없다
+        Memory[host] = png;
     }
 
     /// <summary>이 항목이 지금 대상 사이트의 아이콘을 이미 갖고 있는가</summary>
@@ -161,7 +171,7 @@ internal static partial class WebIcons
                 if (bytes == null || bytes.Length < 16) continue;
                 var store = ToStorable(bytes);
                 if (store == null) continue; // 그림이 아니면(예: 오류 페이지) 건너뛴다
-                Memory[host] = store; // 목록 파일에는 UI 쪽(Finished 처리)이 항목에 넣어 저장한다
+                Remember(host, store); // 목록 파일에는 UI 쪽(Finished 처리)이 항목에 넣어 저장한다
                 break;
             }
         }

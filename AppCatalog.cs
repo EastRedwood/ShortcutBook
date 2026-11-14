@@ -142,7 +142,7 @@ internal sealed class AppRow
     {
         get
         {
-            if (!_loaded) { _loaded = true; _icon = IconService.Get(new ListItem { Target = App.Target }, 32); }
+            if (!_loaded) { _loaded = true; _icon = IconService.Get(new ListItem { Target = App.Target }, 32, cache: false); }
             return _icon;
         }
     }

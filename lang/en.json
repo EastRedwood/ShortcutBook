@@ -13,8 +13,6 @@
   "tip_manual": "Open manual",
   "tip_web": "Open web page",
   "tip_memo": "Show memo",
-  "tip_no_target": "No target is set",
-  "tip_missing": "Target not found (moved or deleted)",
 
   "empty_hint": "This list is empty.\nClick + above, or drop shortcuts and programs onto this window.",
   "no_result": "No results.",

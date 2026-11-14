@@ -174,9 +174,6 @@ public partial class App : Application
         catch (Exception ex) { Log.Write("아이콘 미리 읽기 실패: " + ex.Message); }
     }
 
-    /// <summary>지금 열려 있는 목록 파일들의 경로</summary>
-    public List<string> OpenListPaths() => _lists.Keys.ToList();
-
     public static void ApplyNameWidth()
     {
         Current.Resources["NameColWidth"] = new GridLength(Math.Clamp(Settings.NameWidth, 100, 700));
