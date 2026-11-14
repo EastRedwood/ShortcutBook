@@ -174,6 +174,13 @@ public partial class App : Application
         catch (Exception ex) { Log.Write("아이콘 미리 읽기 실패: " + ex.Message); }
     }
 
+    /// <summary>아이콘 캐시를 비우고 모든 창의 아이콘을 다시 읽게 한다 (웹 아이콘 설정을 바꿨을 때).</summary>
+    public static void RefreshIcons()
+    {
+        IconService.Clear();
+        ViewChanged?.Invoke();
+    }
+
     public static void ApplyNameWidth()
     {
         Current.Resources["NameColWidth"] = new GridLength(Math.Clamp(Settings.NameWidth, 100, 700));

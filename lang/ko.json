@@ -141,5 +141,8 @@
   "app_picker_loading": "앱 목록을 읽는 중…",
   "app_picker_none": "찾는 앱이 없습니다.",
   "app_kind_store": "Windows 앱",
-  "app_kind_program": "프로그램"
+  "app_kind_program": "프로그램",
+  "set_web_icon": "웹 주소 아이콘",
+  "set_web_icon_check": "대상이 웹 주소이면 사이트 아이콘을 인터넷에서 가져오기",
+  "web_icon_hint": "그 사이트에 아이콘(파비콘)이 있으면 받아서 이 PC에 저장해 두고 씁니다. 인터넷에 연결되지 않았거나 아이콘이 없으면 기본 웹 아이콘으로 보입니다. 매뉴얼·웹 주소 칸의 단추는 항상 기본 웹 아이콘입니다."
 }

@@ -69,7 +69,8 @@ public partial class MainWindow : Window
             }
         };
         App.ViewChanged += OnViewChanged;
-        Closed += (_, _) => App.ViewChanged -= OnViewChanged;
+        WebIcons.Fetched += OnWebIconFetched;
+        Closed += (_, _) => { App.ViewChanged -= OnViewChanged; WebIcons.Fetched -= OnWebIconFetched; };
     }
 
     /// <summary>이 창에 목록 하나를 채운다 (처음 열 때와, 창을 다른 목록으로 바꿀 때)</summary>
@@ -191,6 +192,14 @@ public partial class MainWindow : Window
         RefreshAll();
         UpdateTitle();
         UpdateEmpty();
+    }
+
+    /// <summary>사이트 아이콘을 새로 받았을 때 그 사이트를 대상으로 하는 줄만 다시 그린다.</summary>
+    void OnWebIconFetched(string host)
+    {
+        foreach (var vm in _all)
+            if (string.IsNullOrWhiteSpace(vm.Item.IconPath) && WebIcons.TryOrigin(vm.Item.Target, out var o) && o.Host.Equals(host, StringComparison.OrdinalIgnoreCase))
+                vm.Refresh();
     }
 
     void RefreshAll()

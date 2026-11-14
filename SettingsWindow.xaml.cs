@@ -27,6 +27,7 @@ public partial class SettingsWindow : Window
         new[] { Theme0, Theme1, Theme2, Theme3 }[Math.Clamp(App.Settings.Theme, 0, 3)].IsChecked = true;
         (App.Settings.OpenInNewWindow ? OpenNew : OpenReplace).IsChecked = true;
         new[] { Dup0, Dup1, Dup2 }[Math.Clamp(App.Settings.DuplicateMode, 0, 2)].IsChecked = true;
+        WebIconCheck.IsChecked = App.Settings.FetchWebIcons;
         EditKeyBox.Text = App.Settings.EditHotkey;
         NameWidthSlider.Value = Math.Clamp(App.Settings.NameWidth, 120, 600);
         NameWidthText.Text = ((int)NameWidthSlider.Value) + " px";
@@ -90,6 +91,14 @@ public partial class SettingsWindow : Window
         if (_loading) return;
         App.Settings.OpenInNewWindow = OpenNew.IsChecked == true;
         App.Settings.Save();
+    }
+
+    void OnWebIconToggled(object sender, RoutedEventArgs e)
+    {
+        if (_loading) return;
+        App.Settings.FetchWebIcons = WebIconCheck.IsChecked == true;
+        App.Settings.Save();
+        App.RefreshIcons(); // 켜면 바로 받아 오고, 끄면 기본 웹 아이콘으로 돌아간다
     }
 
     void OnDupChecked(object sender, RoutedEventArgs e)

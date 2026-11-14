@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using Microsoft.Win32;
 
 namespace ShortcutBook;
@@ -40,6 +41,8 @@ public partial class ItemEditWindow : Window
         Title = Loc.T(isNew ? "add_title" : "edit_title");
         DeleteBtn.Visibility = isNew ? Visibility.Collapsed : Visibility.Visible;
         UpdatePreview();
+        WebIcons.Fetched += OnWebIconFetched;
+        Closed += (_, _) => { WebIcons.Fetched -= OnWebIconFetched; _webTimer?.Stop(); };
         Loaded += (_, _) => { NameBox.Focus(); NameBox.SelectAll(); };
         // Ctrl+Enter = 바로 저장하고 닫기 (여러 줄 입력 칸에서도 줄바꿈이 되지 않게 먼저 가로챈다)
         PreviewKeyDown += (_, e) =>
@@ -54,13 +57,35 @@ public partial class ItemEditWindow : Window
 
     // ─────────────── 아이콘 미리보기 ───────────────
 
-    void OnTargetChanged(object sender, TextChangedEventArgs e) => UpdatePreview();
+    DispatcherTimer? _webTimer;
 
-    void UpdatePreview()
+    void OnTargetChanged(object sender, TextChangedEventArgs e)
+    {
+        UpdatePreview(allowFetch: false);
+        // 웹 주소는 입력이 잠시 멈춘 뒤에야 사이트 아이콘을 받아 온다 (입력 중간 글자로 요청하지 않으려고)
+        _webTimer ??= new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(700) };
+        _webTimer.Tick -= OnWebTimer;
+        _webTimer.Tick += OnWebTimer;
+        _webTimer.Stop();
+        _webTimer.Start();
+    }
+
+    void OnWebTimer(object? sender, EventArgs e)
+    {
+        _webTimer?.Stop();
+        UpdatePreview(allowFetch: true);
+    }
+
+    void OnWebIconFetched(string host)
+    {
+        if (WebIcons.TryOrigin(TargetBox.Text, out var o) && o.Host.Equals(host, StringComparison.OrdinalIgnoreCase)) UpdatePreview(allowFetch: false);
+    }
+
+    void UpdatePreview(bool allowFetch = true)
     {
         if (PreviewImage == null) return;
         var probe = new ListItem { Target = TargetBox.Text, IconPath = IconBox.Text };
-        var img = IconService.Get(probe, 40);
+        var img = IconService.Get(probe, 40, allowFetch);
         PreviewImage.Source = img;
         PreviewGlyph.Visibility = img == null ? Visibility.Visible : Visibility.Collapsed;
         var t = Launcher.Expand(TargetBox.Text);

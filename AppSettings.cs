@@ -12,6 +12,8 @@ public sealed class AppSettings
     public double NameWidth { get; set; } = 300;
     /// <summary>같은 대상(경로·주소)을 등록할 때: 0 추가 등록 · 1 등록 제외 · 2 새로 덮어쓰기</summary>
     public int DuplicateMode { get; set; }
+    /// <summary>대상이 웹 주소인 항목은 그 사이트의 아이콘을 인터넷에서 받아 보여 준다 (기본: 켬)</summary>
+    public bool FetchWebIcons { get; set; } = true;
     public string? Language { get; set; }
     public bool RegisterShell { get; set; } = true;
     /// <summary>0 시스템 · 1 라이트 · 2 다크 · 3 회색</summary>

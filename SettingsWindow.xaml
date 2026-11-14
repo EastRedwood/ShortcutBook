@@ -61,6 +61,13 @@
         </StackPanel>
         <TextBlock Text="{l:T dup_hint}" Foreground="{DynamicResource SubText}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
 
+        <!-- 웹 아이콘 -->
+        <TextBlock Text="{l:T set_web_icon}" Style="{StaticResource SectionTitle}"/>
+        <CheckBox x:Name="WebIconCheck" Margin="0,8,0,0" Checked="OnWebIconToggled" Unchecked="OnWebIconToggled">
+            <TextBlock Text="{l:T set_web_icon_check}" TextWrapping="Wrap"/>
+        </CheckBox>
+        <TextBlock Text="{l:T web_icon_hint}" Foreground="{DynamicResource SubText}" FontSize="12" Margin="22,4,0,0" TextWrapping="Wrap"/>
+
         <!-- 수정 단축키 -->
         <TextBlock Text="{l:T set_edit_key}" Style="{StaticResource SectionTitle}"/>
         <Grid Margin="0,8,0,0">

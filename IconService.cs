@@ -23,8 +23,12 @@ internal static class IconService
         try { Scale = GetDpiForSystem() / 96.0; } catch { }
     }
 
-    public static ImageSource? Get(ListItem it, int logicalSize)
+    public static ImageSource? Get(ListItem it, int logicalSize, bool allowFetch = true)
     {
+        // 대상이 웹 주소이고 아이콘을 직접 지정하지 않았다면 그 사이트의 아이콘(파비콘)을 쓴다
+        if (string.IsNullOrWhiteSpace(it.IconPath) && WebIcons.TryOrigin(it.Target, out var origin))
+            return WebIcon(origin, (int)Math.Ceiling(logicalSize * Scale), allowFetch);
+
         var src = ResolveSource(it);
         if (src.Length == 0) return null;
         int px = (int)Math.Ceiling(logicalSize * Scale);
@@ -33,6 +37,18 @@ internal static class IconService
         var img = Load(src, px);
         Cache[key] = img;
         return img;
+    }
+
+    /// <summary>웹 주소 대상의 사이트 아이콘. 설정이 꺼져 있거나 아직 못 받았으면 null (화면은 기본 웹 아이콘을 쓴다).</summary>
+    static ImageSource? WebIcon(Uri origin, int px, bool allowFetch)
+    {
+        if (!App.Settings.FetchWebIcons) return null;
+        var key = "web:" + origin.Host + "|" + px;
+        if (Cache.TryGetValue(key, out var hit)) return hit;
+        var img = WebIcons.Load(origin.Host, px);
+        if (img != null) { Cache[key] = img; return img; }
+        if (allowFetch) WebIcons.Request(origin);
+        return null;
     }
 
     public static string ResolveSource(ListItem it)
