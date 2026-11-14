@@ -40,7 +40,7 @@ public partial class ItemEditWindow : Window
 
         Title = Loc.T(isNew ? "add_title" : "edit_title");
         DeleteBtn.Visibility = isNew ? Visibility.Collapsed : Visibility.Visible;
-        UpdatePreview();
+        UpdatePreview(allowFetch: false); // 열었을 때의 확인은 위 대상 칸 설정이 일으키는 입력 대기(0.7초) 뒤에 한 번 한다
         WebIcons.Fetched += OnWebIconFetched;
         Closed += (_, _) => { WebIcons.Fetched -= OnWebIconFetched; _webTimer?.Stop(); };
         Loaded += (_, _) => { NameBox.Focus(); NameBox.SelectAll(); };
@@ -58,6 +58,10 @@ public partial class ItemEditWindow : Window
     // ─────────────── 아이콘 미리보기 ───────────────
 
     DispatcherTimer? _webTimer;
+    readonly HashSet<string> _requestedHosts = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>이 창에서 사이트 아이콘을 확인한 사이트들. 저장하지 않았거나 주소를 바꿨다면 호출한 쪽이 저장 뒤에 정리한다.</summary>
+    public IReadOnlyCollection<string> RequestedHosts => _requestedHosts;
 
     void OnTargetChanged(object sender, TextChangedEventArgs e)
     {
@@ -85,6 +89,7 @@ public partial class ItemEditWindow : Window
     {
         if (PreviewImage == null) return;
         var probe = new ListItem { Target = TargetBox.Text, IconPath = IconBox.Text };
+        if (allowFetch && WebIcons.TryOrigin(TargetBox.Text, out var wo)) _requestedHosts.Add(wo.Host);
         var img = IconService.Get(probe, 40, allowFetch);
         PreviewImage.Source = img;
         PreviewGlyph.Visibility = img == null ? Visibility.Visible : Visibility.Collapsed;
@@ -213,6 +218,7 @@ public partial class ItemEditWindow : Window
         _item.ManualPath = ManualBox.Text.Trim().Trim('"');
         _item.WebUrl = WebBox.Text.Trim();
         _item.Memo = MemoBox.Text.TrimEnd();
+        UpdatePreview(allowFetch: true); // 입력 직후 바로 저장해도 사이트 아이콘을 한 번 확인한다
         DialogResult = true;
     }
 

@@ -97,8 +97,7 @@ public partial class SettingsWindow : Window
     {
         if (_loading) return;
         App.Settings.FetchWebIcons = WebIconCheck.IsChecked == true;
-        App.Settings.Save();
-        App.RefreshIcons(); // 켜면 바로 받아 오고, 끄면 기본 웹 아이콘으로 돌아간다
+        App.Settings.Save(); // 끄면 새로 받아 오지 않을 뿐, 이미 받은 아이콘은 그대로 쓴다
     }
 
     void OnDupChecked(object sender, RoutedEventArgs e)

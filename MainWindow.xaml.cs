@@ -310,15 +310,17 @@ public partial class MainWindow : Window
     void AddItem(ListItem seed)
     {
         var dlg = new ItemEditWindow(seed, isNew: true) { Owner = this };
-        if (dlg.ShowDialog() != true || dlg.Deleted) return;
+        if (dlg.ShowDialog() != true || dlg.Deleted) { WebIcons.Cleanup(dlg.RequestedHosts); return; } // 취소했으면 이 창에서 받은 아이콘을 치운다
         var (vm, skipped) = Place(dlg.Result);
         if (skipped)
         {
+            WebIcons.Cleanup(dlg.RequestedHosts);
             MessageBox.Show(this, Loc.F("dup_skipped_msg", dlg.Result.Target), AppInfo.Name, MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
         Save();
         UpdateEmpty();
+        WebIcons.Cleanup(dlg.RequestedHosts); // 쓰이지 않게 된 사이트(입력하다 바꾼 주소)의 아이콘 정리
         if (vm != null) List.ScrollIntoView(vm);
     }
 
@@ -383,7 +385,11 @@ public partial class MainWindow : Window
         foreach (var vm in vms) _all.Remove(vm);
         Save();
         UpdateEmpty();
+        CleanupWebIcons(vms.Select(v => v.Item.Target)); // 지운 바로가기의 사이트 아이콘도 지운다
     }
+
+    static void CleanupWebIcons(IEnumerable<string> targets) =>
+        WebIcons.Cleanup(targets.Select(t => WebIcons.TryOrigin(t, out var o) ? o.Host : "").Where(h => h.Length > 0));
 
     void RunAll(List<ItemVM> vms)
     {
@@ -411,7 +417,8 @@ public partial class MainWindow : Window
     void EditItem(ItemVM vm)
     {
         var dlg = new ItemEditWindow(vm.Item.Clone(), isNew: false) { Owner = this };
-        if (dlg.ShowDialog() != true) return;
+        var oldTarget = vm.Item.Target;
+        if (dlg.ShowDialog() != true) { WebIcons.Cleanup(dlg.RequestedHosts); return; }
         if (dlg.Deleted)
         {
             _all.Remove(vm);
@@ -424,6 +431,9 @@ public partial class MainWindow : Window
         }
         Save();
         UpdateEmpty();
+        // 지웠거나 대상 주소를 바꿨다면 옛 사이트 아이콘을, 입력하다 바꾼 주소의 아이콘도 함께 정리한다
+        CleanupWebIcons(new[] { oldTarget });
+        WebIcons.Cleanup(dlg.RequestedHosts);
     }
 
     static ItemVM? VmOf(object sender) => (sender as FrameworkElement)?.DataContext as ItemVM;

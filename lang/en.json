@@ -143,6 +143,6 @@
   "app_kind_store": "Windows app",
   "app_kind_program": "Program",
   "set_web_icon": "Web address icons",
-  "set_web_icon_check": "Get the site's icon from the internet when the target is a web address",
-  "web_icon_hint": "If the site has an icon (favicon), it is downloaded and kept on this PC. Without an internet connection, or if the site has no icon, the default web icon is shown. The manual / web address buttons always use the default web icon."
+  "set_web_icon_check": "Download new site icons from the internet when the target is a web address",
+  "web_icon_hint": "The site is checked once, only when you enter an address or open the edit window; it does not keep retrying when offline. Turning this off only stops new downloads: icons already downloaded keep being used. Deleting a shortcut also deletes its saved icon. The manual / web address buttons always use the default web icon."
 }
