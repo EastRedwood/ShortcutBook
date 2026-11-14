@@ -29,6 +29,14 @@ public sealed class ListItem
     public string WebUrl { get; set; } = "";
     public string Memo { get; set; } = "";
 
+    /// <summary>대상이 웹 주소일 때 받아 둔 사이트 아이콘 (작은 PNG 를 Base64 글자로). 목록 파일 안에 함께 저장되어 파일을 옮기거나 지우면 같이 움직인다.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? WebIcon { get; set; }
+
+    /// <summary>WebIcon 을 받은 사이트의 호스트. 대상 주소의 사이트가 바뀌면 옛 아이콘은 쓰지 않는다.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? WebIconHost { get; set; }
+
     public ListItem Clone() => (ListItem)MemberwiseClone();
 
     public void CopyFrom(ListItem o)
@@ -36,6 +44,7 @@ public sealed class ListItem
         Name = o.Name; Description = o.Description; Target = o.Target; Arguments = o.Arguments;
         WorkDir = o.WorkDir; IconPath = o.IconPath; WindowStyle = o.WindowStyle;
         RunAsAdmin = o.RunAsAdmin; ManualPath = o.ManualPath; WebUrl = o.WebUrl; Memo = o.Memo;
+        WebIcon = o.WebIcon; WebIconHost = o.WebIconHost;
     }
 }
 

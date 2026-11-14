@@ -27,7 +27,7 @@ internal static class IconService
     {
         // 대상이 웹 주소이고 아이콘을 직접 지정하지 않았다면 그 사이트의 아이콘(파비콘)을 쓴다
         if (string.IsNullOrWhiteSpace(it.IconPath) && WebIcons.TryTarget(it.Target, out var origin, out var page))
-            return WebIcon(origin, page, (int)Math.Ceiling(logicalSize * Scale), allowFetch);
+            return WebIcon(it, origin, page, (int)Math.Ceiling(logicalSize * Scale), allowFetch);
 
         var src = ResolveSource(it);
         if (src.Length == 0) return null;
@@ -41,12 +41,16 @@ internal static class IconService
 
     /// <summary>웹 주소 대상의 사이트 아이콘. 이미 받아 둔 것만 돌려주고 없으면 null (화면은 기본 웹 아이콘을 쓴다).
     /// 새로 받아 오는 것은 allowFetch 이고 설정이 켜져 있을 때뿐이다 (수정 창에서만 true 로 부른다).</summary>
-    static ImageSource? WebIcon(Uri origin, Uri page, int px, bool allowFetch)
+    static ImageSource? WebIcon(ListItem it, Uri origin, Uri page, int px, bool allowFetch)
     {
-        var key = "web:" + origin.Host + "|" + px;
-        if (Cache.TryGetValue(key, out var hit)) return hit;
-        var img = WebIcons.Load(origin.Host, px);
-        if (img != null) { Cache[key] = img; return img; }
+        // 1) 항목 안에 저장된 아이콘  2) 이번 실행 중 받았거나 옛 폴더에 있던 것
+        var bytes = WebIcons.HasStored(it, origin.Host) ? WebIcons.StoredBytes(it) : null;
+        bytes ??= WebIcons.Lookup(origin.Host);
+        if (bytes != null)
+        {
+            try { var img = WebIcons.Decode(bytes, px); if (img != null) return img; }
+            catch (Exception ex) { Log.Write("웹 아이콘 해석 실패 " + origin.Host + ": " + ex.Message); }
+        }
         if (allowFetch && App.Settings.FetchWebIcons) WebIcons.Request(origin, page);
         return null;
     }

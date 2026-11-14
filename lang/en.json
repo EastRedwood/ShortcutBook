@@ -144,7 +144,7 @@
   "app_kind_program": "Program",
   "set_web_icon": "Web address icons",
   "set_web_icon_check": "Download new site icons from the internet when the target is a web address",
-  "web_icon_hint": "The site is checked once, only when you enter an address, open the edit window, or import bookmarks; it does not keep retrying when offline. Turning this off only stops new downloads: icons already downloaded keep being used. Deleting a shortcut also deletes its saved icon. The manual / web address buttons always use the default web icon.",
+  "web_icon_hint": "The site is checked once, only when you enter an address, open the edit window, or import bookmarks; it does not keep retrying when offline. Turning this off only stops new downloads: icons already downloaded keep being used. Downloaded icons are saved inside the list file (.sbook) together with each item, so deleting an item or the file removes its icons, and moving the file takes them along. The manual / web address buttons always use the default web icon.",
   "bm_title": "Import bookmarks",
   "bm_filter": "Bookmarks HTML file",
   "bm_hint": "Check only the bookmarks you want from the HTML file exported by your browser. Checking a folder selects everything inside it. Duplicates follow the 'When registering the same path or address' setting.",

@@ -81,6 +81,7 @@ public partial class MainWindow : Window
         SearchBox.Clear();
         _all.Clear();
         foreach (var it in doc.Items) _all.Add(new ItemVM(it));
+        AdoptWebIcons();
         ApplySort();
         UpdateTitle();
         UpdateEmpty();
@@ -194,12 +195,28 @@ public partial class MainWindow : Window
         UpdateEmpty();
     }
 
-    /// <summary>사이트 아이콘을 새로 받았을 때 그 사이트를 대상으로 하는 줄만 다시 그린다.</summary>
+    /// <summary>
+    /// 사이트 아이콘 요청이 끝났을 때. 그 사이트를 대상으로 하고 아직 아이콘이 없는 줄에 받은 아이콘을 넣고(항목 안에 저장),
+    /// 그 줄들을 다시 그린다 (불러오는 중 표시도 거둔다).
+    /// </summary>
     void OnWebIconFetched(string host)
     {
+        bool changed = false;
         foreach (var vm in _all)
-            if (string.IsNullOrWhiteSpace(vm.Item.IconPath) && WebIcons.TryOrigin(vm.Item.Target, out var o) && o.Host.Equals(host, StringComparison.OrdinalIgnoreCase))
-                vm.Refresh();
+        {
+            if (!string.IsNullOrWhiteSpace(vm.Item.IconPath) || !WebIcons.TryOrigin(vm.Item.Target, out var o) || !o.Host.Equals(host, StringComparison.OrdinalIgnoreCase)) continue;
+            changed |= WebIcons.Adopt(vm.Item);
+            vm.Refresh();
+        }
+        if (changed) Save();
+    }
+
+    /// <summary>목록을 열 때: 옛 폴더(webicons)에 받아 둔 아이콘이 있으면 항목 안으로 옮겨 담는다. 바뀌었으면 한 번 저장한다.</summary>
+    void AdoptWebIcons()
+    {
+        bool changed = false;
+        foreach (var vm in _all) changed |= WebIcons.Adopt(vm.Item);
+        if (changed) Save();
     }
 
     void RefreshAll()
@@ -310,18 +327,16 @@ public partial class MainWindow : Window
     void AddItem(ListItem seed)
     {
         var dlg = new ItemEditWindow(seed, isNew: true) { Owner = this };
-        if (dlg.ShowDialog() != true || dlg.Deleted) { WebIcons.Cleanup(dlg.RequestedHosts); return; } // 취소했으면 이 창에서 받은 아이콘을 치운다
-        if (dlg.ImportedItems != null) { ImportItems(dlg.ImportedItems); WebIcons.Cleanup(dlg.RequestedHosts); return; } // 북마크를 여러 개 골랐다
+        if (dlg.ShowDialog() != true || dlg.Deleted) return;
+        if (dlg.ImportedItems != null) { ImportItems(dlg.ImportedItems); return; } // 북마크를 여러 개 골랐다
         var (vm, skipped) = Place(dlg.Result);
         if (skipped)
         {
-            WebIcons.Cleanup(dlg.RequestedHosts);
             MessageBox.Show(this, Loc.F("dup_skipped_msg", dlg.Result.Target), AppInfo.Name, MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
         Save();
         UpdateEmpty();
-        WebIcons.Cleanup(dlg.RequestedHosts); // 쓰이지 않게 된 사이트(입력하다 바꾼 주소)의 아이콘 정리
         if (vm != null) List.ScrollIntoView(vm);
     }
 
@@ -347,12 +362,14 @@ public partial class MainWindow : Window
         var dup = App.Settings.DuplicateMode == 0 ? null : FindDuplicate(it);
         if (dup == null)
         {
+            WebIcons.Adopt(it); // 이미 받아 둔 사이트 아이콘이 있으면 바로 넣는다
             var vm = new ItemVM(it) { CanReorder = CanReorder };
             _all.Add(vm);
             return (vm, false);
         }
         if (App.Settings.DuplicateMode == 1) return (null, true);
         dup.Item.CopyFrom(it);
+        WebIcons.Adopt(dup.Item);
         dup.Refresh();
         _view.Refresh();
         return (dup, false);
@@ -386,11 +403,7 @@ public partial class MainWindow : Window
         foreach (var vm in vms) _all.Remove(vm);
         Save();
         UpdateEmpty();
-        CleanupWebIcons(vms.Select(v => v.Item.Target)); // 지운 바로가기의 사이트 아이콘도 지운다
     }
-
-    static void CleanupWebIcons(IEnumerable<string> targets) =>
-        WebIcons.Cleanup(targets.Select(t => WebIcons.TryOrigin(t, out var o) ? o.Host : "").Where(h => h.Length > 0));
 
     void RunAll(List<ItemVM> vms)
     {
@@ -418,8 +431,7 @@ public partial class MainWindow : Window
     void EditItem(ItemVM vm)
     {
         var dlg = new ItemEditWindow(vm.Item.Clone(), isNew: false) { Owner = this };
-        var oldTarget = vm.Item.Target;
-        if (dlg.ShowDialog() != true) { WebIcons.Cleanup(dlg.RequestedHosts); return; }
+        if (dlg.ShowDialog() != true) return;
         if (dlg.Deleted)
         {
             _all.Remove(vm);
@@ -432,9 +444,6 @@ public partial class MainWindow : Window
         }
         Save();
         UpdateEmpty();
-        // 지웠거나 대상 주소를 바꿨다면 옛 사이트 아이콘을, 입력하다 바꾼 주소의 아이콘도 함께 정리한다
-        CleanupWebIcons(new[] { oldTarget });
-        WebIcons.Cleanup(dlg.RequestedHosts);
     }
 
     static ItemVM? VmOf(object sender) => (sender as FrameworkElement)?.DataContext as ItemVM;
@@ -545,7 +554,8 @@ public partial class MainWindow : Window
             if (skip) { skipped++; continue; }
             added++; last = vm;
             if (vm != null) addedVms.Add(vm);
-            if (WebIcons.TryTarget(it.Target, out var o, out var pg)) origins.TryAdd(o.Host, (o, pg)); // 사이트마다 처음 것의 페이지를 본다
+            // 아이콘을 아직 못 얻은 항목만, 사이트마다 처음 것의 페이지로 받아 온다
+            if (WebIcons.TryTarget(it.Target, out var o, out var pg) && !WebIcons.HasStored(it, o.Host)) origins.TryAdd(o.Host, (o, pg));
         }
         if (added > 0)
         {

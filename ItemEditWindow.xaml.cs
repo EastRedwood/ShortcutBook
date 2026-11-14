@@ -59,11 +59,8 @@ public partial class ItemEditWindow : Window
     // ─────────────── 아이콘 미리보기 ───────────────
 
     DispatcherTimer? _webTimer;
-    readonly HashSet<string> _requestedHosts = new(StringComparer.OrdinalIgnoreCase);
     readonly Dictionary<string, string> _pageByHost = new(StringComparer.OrdinalIgnoreCase); // 이 창에서 사이트별로 마지막에 확인한 주소
-
-    /// <summary>이 창에서 사이트 아이콘을 확인한 사이트들. 저장하지 않았거나 주소를 바꿨다면 호출한 쪽이 저장 뒤에 정리한다.</summary>
-    public IReadOnlyCollection<string> RequestedHosts => _requestedHosts;
+    readonly HashSet<string> _refetched = new(StringComparer.OrdinalIgnoreCase); // 주소를 고쳐 쓰며 다시 받은 사이트 (이 창에서 받은 새 아이콘을 우선)
 
     void OnTargetChanged(object sender, TextChangedEventArgs e)
     {
@@ -92,11 +89,12 @@ public partial class ItemEditWindow : Window
     {
         if (PreviewImage == null) return;
         var probe = new ListItem { Target = TargetBox.Text, IconPath = IconBox.Text };
+        // 이 항목에 이미 저장된 사이트 아이콘이 있으면 그것을 보여 준다 (이 창에서 다시 받은 사이트는 새 것)
+        if (WebIcons.TryOrigin(TargetBox.Text, out var po) && !_refetched.Contains(po.Host)) { probe.WebIcon = _item.WebIcon; probe.WebIconHost = _item.WebIconHost; }
         if (allowFetch && App.Settings.FetchWebIcons && string.IsNullOrWhiteSpace(IconBox.Text) && WebIcons.TryTarget(TargetBox.Text, out var wo, out var wp))
         {
-            _requestedHosts.Add(wo.Host);
             // 같은 사이트를 입력하다가 다른 주소로 고쳤다면, 마지막에 입력한 주소의 아이콘으로 다시 받아 덮어쓴다 (최종 입력 우선)
-            if (_pageByHost.TryGetValue(wo.Host, out var prev) && prev != wp.AbsoluteUri) WebIcons.Request(wo, wp, force: true);
+            if (_pageByHost.TryGetValue(wo.Host, out var prev) && prev != wp.AbsoluteUri) { _refetched.Add(wo.Host); WebIcons.Request(wo, wp, force: true); }
             _pageByHost[wo.Host] = wp.AbsoluteUri;
         }
         var img = IconService.Get(probe, 40, allowFetch);
@@ -257,6 +255,17 @@ public partial class ItemEditWindow : Window
         _item.WebUrl = WebBox.Text.Trim();
         _item.Memo = MemoBox.Text.TrimEnd();
         UpdatePreview(allowFetch: true); // 입력 직후 바로 저장해도 사이트 아이콘을 한 번 확인한다
+        // 사이트 아이콘을 항목 안에 담는다: 이미 가진 것(같은 사이트)을 유지하되 이 창에서 다시 받았다면 새 것으로, 없으면 지금 받아 둔 것으로
+        if (string.IsNullOrWhiteSpace(IconBox.Text) && WebIcons.TryOrigin(TargetBox.Text, out var so))
+        {
+            if (!(WebIcons.HasStored(_item, so.Host) && !_refetched.Contains(so.Host)))
+            {
+                var b = WebIcons.Lookup(so.Host);
+                _item.WebIcon = b == null ? null : WebIcons.ToText(b);
+                _item.WebIconHost = b == null ? null : so.Host;
+            }
+        }
+        else { _item.WebIcon = null; _item.WebIconHost = null; }
         DialogResult = true;
     }
 
