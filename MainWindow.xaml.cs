@@ -853,8 +853,8 @@ public partial class MainWindow : Window
                 int idx = -1; // 이름순 정렬이거나 검색 중이면 자리가 의미 없으므로 맨 끝
                 if (CanReorder)
                 {
-                    var (t, above) = UpdateMark(e.GetPosition(List));
-                    if (t != null) idx = _all.IndexOf(t) + (above ? 0 : 1);
+                    var (ft, fAbove) = UpdateMark(e.GetPosition(List));
+                    if (ft != null) idx = _all.IndexOf(ft) + (fAbove ? 0 : 1);
                 }
                 ClearMark(); e.Handled = true; TakeFromOtherWindow(idx); return;
             }
