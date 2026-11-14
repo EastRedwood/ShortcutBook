@@ -84,6 +84,7 @@ public partial class MainWindow : Window
         ApplySort();
         UpdateTitle();
         UpdateEmpty();
+        MarkSynced();
     }
 
     // ─────────────── 현재 창에서 다른 목록으로 이동 (뒤로 · 앞으로) ───────────────
@@ -152,6 +153,19 @@ public partial class MainWindow : Window
 
     // ─────────────── 키보드: Enter 실행 · 수정 단축키 · Backspace 뒤로 ───────────────
 
+    /// <summary>
+    /// 메뉴 키(Apps)는 윈도우가 키를 뗄 때 우클릭 메뉴를 여는 방식이다. 누를 때 열면 곧이어 오는 "뗌" 입력이 열린 메뉴를 바로 닫아 버리므로
+    /// 키를 뗄 때 연다.
+    /// </summary>
+    void OnWindowKeyUp(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Apps && Keyboard.Modifiers == ModifierKeys.None)
+        {
+            ShowMenuForSelection();
+            e.Handled = true;
+        }
+    }
+
     void OnWindowKeyDown(object sender, KeyEventArgs e)
     {
         var key = e.Key == Key.System ? e.SystemKey : e.Key;
@@ -176,9 +190,16 @@ public partial class MainWindow : Window
             e.Handled = true;
             return;
         }
-        if ((key == Key.Apps && mods == ModifierKeys.None) || (key == Key.F10 && mods == ModifierKeys.Shift))
+        if (key == Key.F10 && mods == ModifierKeys.Shift)
         {
-            ShowMenuForSelection();                                                       // Shift+F10 / 메뉴 키: 우클릭 메뉴
+            ShowMenuForSelection();                                                       // Shift+F10: 우클릭 메뉴
+            e.Handled = true;
+            return;
+        }
+        if (key == Key.Apps && mods == ModifierKeys.None) { e.Handled = true; return; }   // 메뉴 키는 키를 뗄 때 연다 (OnWindowKeyUp)
+        if (key == Key.F5 && mods == ModifierKeys.None)
+        {
+            if (!e.IsRepeat) ReloadFromDisk();                                            // F5: 목록 파일 다시 읽기
             e.Handled = true;
             return;
         }
@@ -295,12 +316,79 @@ public partial class MainWindow : Window
 
     // ─────────────── 저장 ───────────────
 
+    // ── 밖에서 바뀐 파일 감지: 마지막으로 읽거나 쓴 때의 파일 상태를 기억해 두고, 저장하기 전에 비교한다 ──
+    readonly record struct FileQuick(bool Exists, long Length, long Ticks);
+    FileQuick _quick;
+    string _hash = "";
+
+    static FileQuick QuickOf(string path)
+    {
+        try { var f = new FileInfo(path); return f.Exists ? new FileQuick(true, f.Length, f.LastWriteTimeUtc.Ticks) : default; }
+        catch { return default; }
+    }
+
+    static string HashOf(string path)
+    {
+        try { return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))); }
+        catch { return ""; }
+    }
+
+    /// <summary>방금 읽었거나 저장한 파일 상태를 "이 프로그램이 아는 상태"로 기록한다.</summary>
+    void MarkSynced()
+    {
+        _quick = QuickOf(ListPath);
+        _hash = HashOf(ListPath);
+    }
+
+    /// <summary>
+    /// 저장 직전에 호출한다. 파일이 이 프로그램 밖에서(다른 프로그램, 클라우드 동기화 등) 바뀌었으면 덮어쓸지 다시 불러올지 묻는다.
+    /// true 면 저장해도 된다. false 면 저장하지 않는다 (파일 내용으로 다시 불러왔다).
+    /// </summary>
+    bool ConfirmNoExternalChange()
+    {
+        var q = QuickOf(ListPath);
+        if (q == _quick) return true;
+        if (!q.Exists) return true; // 밖에서 지워졌다면 이번 저장이 다시 만든다
+        var h = HashOf(ListPath);
+        if (h == _hash) { _quick = q; return true; } // 내용은 같고 수정 시각만 바뀐 경우 (동기화 프로그램 등)
+        var r = MessageBox.Show(this, Loc.T("ext_changed_msg"), AppInfo.Name, MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+        if (r == MessageBoxResult.Yes) return true;
+        ReloadFromDisk();
+        return false;
+    }
+
+    /// <summary>
+    /// 목록 파일을 디스크에서 다시 읽어 화면을 새로 만든다 (F5). 선택한 줄과 검색어는 되도록 유지하고 아이콘도 다시 읽는다.
+    /// 파일을 읽을 수 없으면 지금 화면을 그대로 둔다.
+    /// </summary>
+    void ReloadFromDisk()
+    {
+        ListDocument doc;
+        try { doc = ListDocument.Load(ListPath); }
+        catch (Exception ex)
+        {
+            Log.Write("목록 다시 읽기 실패 " + ListPath + ": " + ex);
+            ShowError(Loc.F("err_open_list", ListPath, ex.Message));
+            return;
+        }
+        var selectedIds = SelectedVms().Select(v => v.Item.Id).ToHashSet();
+        var search = SearchBox.Text;
+        IconService.Clear();
+        LoadList(ListPath, doc);
+        if (search.Length > 0) SearchBox.Text = search;
+        var again = _view.Cast<ItemVM>().Where(v => selectedIds.Contains(v.Item.Id)).ToList();
+        foreach (var v in again) List.SelectedItems.Add(v);
+        if (again.Count > 0) List.ScrollIntoView(again[0]);
+    }
+
     void Save()
     {
+        if (!ConfirmNoExternalChange()) return;
         try
         {
             _doc.Items = _all.Select(v => v.Item).ToList();
             _doc.Save(ListPath);
+            MarkSynced();
         }
         catch (Exception ex)
         {

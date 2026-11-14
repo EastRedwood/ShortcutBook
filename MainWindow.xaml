@@ -7,7 +7,7 @@
         FontFamily="Segoe UI, Malgun Gothic" FontSize="13"
         UseLayoutRounding="True" SnapsToDevicePixels="True"
         AllowDrop="True" DragOver="OnWindowDragOver" Drop="OnWindowDrop"
-        PreviewKeyDown="OnWindowKeyDown" PreviewMouseDown="OnWindowMouseDown"
+        PreviewKeyDown="OnWindowKeyDown" PreviewKeyUp="OnWindowKeyUp" PreviewMouseDown="OnWindowMouseDown"
         WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="B2V"/>
