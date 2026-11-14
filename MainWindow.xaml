@@ -114,6 +114,8 @@
                                                FontSize="{DynamicResource GlyphBig}" Foreground="{DynamicResource SubText}"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     <Image x:Name="IconImage" Source="{Binding Icon}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    <l:Spinner x:Name="IconSpinner" Width="{DynamicResource GlyphBig}" Height="{DynamicResource GlyphBig}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
                                 </Grid>
 
                                 <!-- 이름 · 설명 (빌드 #11: 설명을 이름 오른쪽에 배치. 이전 배치는 커밋 빌드 #10 참고) -->
@@ -156,6 +158,10 @@
                                 <Setter TargetName="MarkBottom" Property="Visibility" Value="Visible"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding HasIcon}" Value="True">
+                                <Setter TargetName="FallbackIcon" Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsLoadingIcon}" Value="True">
+                                <Setter TargetName="IconSpinner" Property="Visibility" Value="Visible"/>
                                 <Setter TargetName="FallbackIcon" Property="Visibility" Value="Collapsed"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding Missing}" Value="True">

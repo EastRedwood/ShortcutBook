@@ -25,6 +25,7 @@
                             <TextBlock x:Name="PreviewGlyph" Text="&#xE7C3;" FontFamily="{StaticResource IconFont}" FontSize="26"
                                        Foreground="{DynamicResource SubText}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             <Image x:Name="PreviewImage" Width="40" Height="40" RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <l:Spinner x:Name="PreviewSpinner" Width="30" Height="30" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
                         </Grid>
                     </Border>
                     <StackPanel Grid.Column="1">

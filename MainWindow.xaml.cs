@@ -69,8 +69,8 @@ public partial class MainWindow : Window
             }
         };
         App.ViewChanged += OnViewChanged;
-        WebIcons.Fetched += OnWebIconFetched;
-        Closed += (_, _) => { App.ViewChanged -= OnViewChanged; WebIcons.Fetched -= OnWebIconFetched; };
+        WebIcons.Finished += OnWebIconFetched;
+        Closed += (_, _) => { App.ViewChanged -= OnViewChanged; WebIcons.Finished -= OnWebIconFetched; };
     }
 
     /// <summary>이 창에 목록 하나를 채운다 (처음 열 때와, 창을 다른 목록으로 바꿀 때)</summary>
@@ -538,11 +538,13 @@ public partial class MainWindow : Window
         int added = 0, skipped = 0;
         ItemVM? last = null;
         var origins = new Dictionary<string, (Uri Origin, Uri Page)>(StringComparer.OrdinalIgnoreCase);
+        var addedVms = new List<ItemVM>();
         foreach (var it in items)
         {
             var (vm, skip) = Place(it);
             if (skip) { skipped++; continue; }
             added++; last = vm;
+            if (vm != null) addedVms.Add(vm);
             if (WebIcons.TryTarget(it.Target, out var o, out var pg)) origins.TryAdd(o.Host, (o, pg)); // 사이트마다 처음 것의 페이지를 본다
         }
         if (added > 0)
@@ -552,7 +554,10 @@ public partial class MainWindow : Window
             if (last != null) List.ScrollIntoView(last);
             // 설정에서 웹 아이콘 가져오기가 켜져 있으면 가져온 북마크의 사이트 아이콘도 받아 온다 (사이트마다 한 번, 한 번에 4개씩)
             if (App.Settings.FetchWebIcons)
+            {
                 foreach (var (o, pg) in origins.Values) WebIcons.Request(o, pg);
+                foreach (var v in addedVms) v.Refresh(); // 받아 오는 중인 줄에 불러오는 중 표시가 뜨게 다시 읽는다
+            }
         }
         if (skipped > 0)
             MessageBox.Show(this, Loc.F("bm_done_skipped", added, skipped), AppInfo.Name, MessageBoxButton.OK, MessageBoxImage.Information);

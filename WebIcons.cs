@@ -15,8 +15,15 @@ namespace ShortcutBook;
 /// </summary>
 internal static partial class WebIcons
 {
-    /// <summary>아이콘을 새로 받았을 때 (사이트 호스트 이름). UI 스레드에서 올라온다.</summary>
-    public static event Action<string>? Fetched;
+    /// <summary>사이트 아이콘 요청이 끝났을 때 (성공이든 실패든, 사이트 호스트 이름). UI 스레드에서 올라온다. 불러오는 중 표시를 거두는 데도 쓴다.</summary>
+    public static event Action<string>? Finished;
+
+    /// <summary>이 대상(웹 주소)의 사이트 아이콘을 지금 받아 오는 중인가</summary>
+    public static bool IsPending(string? target)
+    {
+        if (!TryOrigin(target, out var o)) return false;
+        lock (Pending) return Pending.Contains(o.Host);
+    }
 
     static readonly HttpClient Http = CreateClient();
     static readonly HashSet<string> Pending = new(StringComparer.OrdinalIgnoreCase);
@@ -82,10 +89,11 @@ internal static partial class WebIcons
     /// 저장된 아이콘이 없으면 사이트에서 한 번 받아 본다 (백그라운드). 수정 창에서 주소를 입력했을 때와 수정 창을 열었을 때만 부른다.
     /// 인터넷에 연결되지 않았거나 아이콘이 없으면 그냥 끝나며, 스스로 다시 시도하지 않는다.
     /// </summary>
-    public static void Request(Uri origin, Uri? page = null)
+    /// <param name="force">이미 저장된 아이콘이 있어도 다시 받아 덮어쓴다 (수정 창에서 주소를 고쳐 쓸 때, 마지막에 입력한 주소의 결과를 우선하려고)</param>
+    public static void Request(Uri origin, Uri? page = null, bool force = false)
     {
         var host = origin.Host;
-        try { if (File.Exists(FilePath(host))) return; }
+        try { if (!force && File.Exists(FilePath(host))) return; }
         catch { return; }
         lock (Pending) { if (!Pending.Add(host)) return; }
         _ = Task.Run(() => FetchAsync(origin, page));
@@ -94,7 +102,6 @@ internal static partial class WebIcons
     static async Task FetchAsync(Uri origin, Uri? page)
     {
         var host = origin.Host;
-        bool saved = false;
         await Gate.WaitAsync();
         try
         {
@@ -119,7 +126,6 @@ internal static partial class WebIcons
                 if (store == null) continue; // 그림이 아니면(예: 오류 페이지) 건너뛴다
                 Directory.CreateDirectory(Dir);
                 File.WriteAllBytes(FilePath(host), store);
-                saved = true;
                 break;
             }
         }
@@ -130,7 +136,7 @@ internal static partial class WebIcons
             lock (Pending) Pending.Remove(host);
         }
 
-        if (saved) Application.Current?.Dispatcher.BeginInvoke(new Action(() => Fetched?.Invoke(host)));
+        Application.Current?.Dispatcher.BeginInvoke(new Action(() => Finished?.Invoke(host)));
     }
 
     /// <summary>받은 바이트를 저장할 그림으로 바꾼다. 래스터(PNG/ICO/…)는 읽을 수 있으면 그대로, SVG 는 PNG 로 그려서. 못 쓰면 null.</summary>
@@ -281,6 +287,7 @@ internal static partial class WebIcons
             int rank = rel.Contains("apple-touch") ? 2 : url.AbsolutePath.EndsWith(".svg", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
             found.Add((url, size, rank));
         }
-        return found.OrderBy(f => f.Rank).ThenByDescending(f => f.Size).Select(f => f.Url);
+        // 같은 순위·크기라면 나중에 적힌 것을 먼저 (일반 아이콘을 앞에, 그 사이트 고유 아이콘을 뒤에 적는 사이트가 많아서)
+        return found.Select((f, i) => (f, i)).OrderBy(x => x.f.Rank).ThenByDescending(x => x.f.Size).ThenByDescending(x => x.i).Select(x => x.f.Url);
     }
 }

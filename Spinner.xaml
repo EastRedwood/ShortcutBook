@@ -1,0 +1,17 @@
+<UserControl x:Class="ShortcutBook.Spinner"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             IsHitTestVisible="False">
+    <!-- 돌아가는 원호 (불러오는 중 표시). 보일 때만 애니메이션을 돌린다. -->
+    <Viewbox>
+        <Grid Width="24" Height="24">
+            <Ellipse Width="20" Height="20" Stroke="{DynamicResource Line}" StrokeThickness="2.5"/>
+            <Ellipse x:Name="Arc" Width="20" Height="20" Stroke="{DynamicResource Accent}" StrokeThickness="2.5"
+                     StrokeDashArray="7 15" StrokeDashCap="Round" RenderTransformOrigin="0.5,0.5">
+                <Ellipse.RenderTransform>
+                    <RotateTransform x:Name="Rot" Angle="0"/>
+                </Ellipse.RenderTransform>
+            </Ellipse>
+        </Grid>
+    </Viewbox>
+</UserControl>

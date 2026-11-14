@@ -122,6 +122,9 @@ public sealed class ItemVM : INotifyPropertyChanged
 
     public bool HasIcon { get { EnsureIcon(); return _icon != null; } }
 
+    /// <summary>웹 주소 대상의 사이트 아이콘을 받아 오는 중이면 그 자리에 불러오는 중 표시를 보인다.</summary>
+    public bool IsLoadingIcon { get { EnsureIcon(); return _icon == null && string.IsNullOrWhiteSpace(Item.IconPath) && WebIcons.IsPending(Item.Target); } }
+
     void EnsureIcon()
     {
         int size = App.IconLogicalSize;

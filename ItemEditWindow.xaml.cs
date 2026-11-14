@@ -42,8 +42,8 @@ public partial class ItemEditWindow : Window
         DeleteBtn.Visibility = isNew ? Visibility.Collapsed : Visibility.Visible;
         BookmarkBtn.Visibility = isNew ? Visibility.Visible : Visibility.Collapsed; // 북마크 가져오기는 새 항목을 추가할 때만
         UpdatePreview(allowFetch: false); // 열었을 때의 확인은 위 대상 칸 설정이 일으키는 입력 대기(0.7초) 뒤에 한 번 한다
-        WebIcons.Fetched += OnWebIconFetched;
-        Closed += (_, _) => { WebIcons.Fetched -= OnWebIconFetched; _webTimer?.Stop(); };
+        WebIcons.Finished += OnWebIconFetched;
+        Closed += (_, _) => { WebIcons.Finished -= OnWebIconFetched; _webTimer?.Stop(); };
         Loaded += (_, _) => { NameBox.Focus(); NameBox.SelectAll(); };
         // Ctrl+Enter = 바로 저장하고 닫기 (여러 줄 입력 칸에서도 줄바꿈이 되지 않게 먼저 가로챈다)
         PreviewKeyDown += (_, e) =>
@@ -60,6 +60,7 @@ public partial class ItemEditWindow : Window
 
     DispatcherTimer? _webTimer;
     readonly HashSet<string> _requestedHosts = new(StringComparer.OrdinalIgnoreCase);
+    readonly Dictionary<string, string> _pageByHost = new(StringComparer.OrdinalIgnoreCase); // 이 창에서 사이트별로 마지막에 확인한 주소
 
     /// <summary>이 창에서 사이트 아이콘을 확인한 사이트들. 저장하지 않았거나 주소를 바꿨다면 호출한 쪽이 저장 뒤에 정리한다.</summary>
     public IReadOnlyCollection<string> RequestedHosts => _requestedHosts;
@@ -83,6 +84,7 @@ public partial class ItemEditWindow : Window
 
     void OnWebIconFetched(string host)
     {
+        // 끝났을 때(성공·실패 모두) 미리보기를 다시 읽는다: 받았으면 아이콘이, 못 받았으면 기본 아이콘이 보인다
         if (WebIcons.TryOrigin(TargetBox.Text, out var o) && o.Host.Equals(host, StringComparison.OrdinalIgnoreCase)) UpdatePreview(allowFetch: false);
     }
 
@@ -90,10 +92,20 @@ public partial class ItemEditWindow : Window
     {
         if (PreviewImage == null) return;
         var probe = new ListItem { Target = TargetBox.Text, IconPath = IconBox.Text };
-        if (allowFetch && WebIcons.TryOrigin(TargetBox.Text, out var wo)) _requestedHosts.Add(wo.Host);
+        if (allowFetch && App.Settings.FetchWebIcons && string.IsNullOrWhiteSpace(IconBox.Text) && WebIcons.TryTarget(TargetBox.Text, out var wo, out var wp))
+        {
+            _requestedHosts.Add(wo.Host);
+            // 같은 사이트를 입력하다가 다른 주소로 고쳤다면, 마지막에 입력한 주소의 아이콘으로 다시 받아 덮어쓴다 (최종 입력 우선)
+            if (_pageByHost.TryGetValue(wo.Host, out var prev) && prev != wp.AbsoluteUri) WebIcons.Request(wo, wp, force: true);
+            _pageByHost[wo.Host] = wp.AbsoluteUri;
+        }
         var img = IconService.Get(probe, 40, allowFetch);
         PreviewImage.Source = img;
-        PreviewGlyph.Visibility = img == null ? Visibility.Visible : Visibility.Collapsed;
+        // 사이트 아이콘을 받아 오는 중이면 기본 아이콘 대신 불러오는 중 표시를 보인다
+        bool loading = string.IsNullOrWhiteSpace(IconBox.Text) && WebIcons.IsPending(TargetBox.Text);
+        PreviewSpinner.Visibility = loading ? Visibility.Visible : Visibility.Collapsed;
+        if (loading) PreviewImage.Source = null; // 받는 동안은 옛 아이콘 대신 불러오는 중 표시만
+        PreviewGlyph.Visibility = img == null && !loading ? Visibility.Visible : Visibility.Collapsed;
         var t = Launcher.Expand(TargetBox.Text);
         PreviewGlyph.Text = Launcher.IsUrl(t) ? G.Globe : Directory.Exists(t) ? G.Folder : G.File;
     }
