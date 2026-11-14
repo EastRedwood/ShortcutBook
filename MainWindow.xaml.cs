@@ -210,6 +210,26 @@ public partial class MainWindow : Window
         if (changed) Save();
     }
 
+    /// <summary>
+    /// 항목 내용이 바뀐 뒤 목록 보기를 다시 만든다. 보기를 통째로 새로 만들면 선택과 스크롤 위치가 맨 위로 돌아가므로,
+    /// 순서나 검색 결과가 바뀔 수 있을 때(이름순 정렬, 검색 중)만 새로 만들고 그때도 선택과 위치를 되돌려 놓는다.
+    /// 임의 정렬이고 검색 중이 아니면 순서가 그대로라 새로 만들 필요가 없다 (각 줄은 vm.Refresh 로 갱신된다).
+    /// </summary>
+    void RefreshViewKeepSelection(ItemVM? keep)
+    {
+        if (_doc.Sort == SortMode.Custom && !Searching) { if (keep != null) List.ScrollIntoView(keep); return; }
+        var selected = List.SelectedItems.Cast<ItemVM>().ToList();
+        if (keep != null && !selected.Contains(keep)) selected = new List<ItemVM> { keep };
+        _view.Refresh();
+        List.SelectedItems.Clear();
+        foreach (var v in selected) if (_view.Contains(v)) List.SelectedItems.Add(v);
+        if (keep != null && _view.Contains(keep))
+        {
+            List.ScrollIntoView(keep);
+            Dispatcher.BeginInvoke(new Action(() => (List.ItemContainerGenerator.ContainerFromItem(keep) as ListBoxItem)?.Focus()), System.Windows.Threading.DispatcherPriority.Background);
+        }
+    }
+
     void RefreshAll()
     {
         foreach (var vm in _all) vm.Refresh();
@@ -362,7 +382,7 @@ public partial class MainWindow : Window
         dup.Item.CopyFrom(it);
         WebIcons.Adopt(dup.Item);
         dup.Refresh();
-        _view.Refresh();
+        RefreshViewKeepSelection(dup);
         return (dup, false);
     }
 
@@ -431,7 +451,7 @@ public partial class MainWindow : Window
         {
             vm.Item.CopyFrom(dlg.Result);
             vm.Refresh();
-            _view.Refresh();
+            RefreshViewKeepSelection(vm);
         }
         Save();
         UpdateEmpty();
