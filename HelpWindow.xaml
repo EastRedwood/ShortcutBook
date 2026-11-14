@@ -13,7 +13,7 @@
         <TextBlock Text="{l:T help_summary}" Foreground="{DynamicResource SubText}" TextWrapping="Wrap" Margin="0,6,0,0"/>
 
         <TextBlock Text="{l:T help_howto_title}" Style="{StaticResource SectionTitle}"/>
-        <TextBlock Text="{l:T help_howto}" TextWrapping="Wrap" LineHeight="21" Margin="0,8,0,0"/>
+        <TextBlock x:Name="HowtoText" TextWrapping="Wrap" LineHeight="21" Margin="0,8,0,0"/>
 
         <Border BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Margin="0,20,0,0" Padding="0,14,0,0">
             <StackPanel>

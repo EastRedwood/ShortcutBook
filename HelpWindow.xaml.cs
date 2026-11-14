@@ -10,6 +10,8 @@ public partial class HelpWindow : Window
         ThemeService.Hook(this);
         PreviewKeyDown += (_, e) => { if (e.Key == System.Windows.Input.Key.Escape) Close(); };
         MaxHeight = Math.Max(300, SystemParameters.WorkArea.Height - 40);
+        // 수정 단축키는 설정에서 바꿀 수 있으므로 지금 설정된 키를 문장에 넣는다
+        HowtoText.Text = Loc.F("help_howto", App.Settings.EditHotkey);
         VersionText.Text = AppInfo.VersionText;
         MailRun.Text = AppInfo.AuthorMail;
     }

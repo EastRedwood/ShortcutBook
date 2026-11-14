@@ -13,8 +13,12 @@
     </Grid.RowDefinitions>
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,0,0">
     <StackPanel Margin="24,12,24,0">
+        <!-- 언어 -->
+        <l:SectionHeader Title="{l:T set_language}" Margin="0,-10,0,0"/>
+        <ComboBox x:Name="LangCombo" Margin="0,8,0,0" Padding="6,4" SelectionChanged="OnLangChanged"/>
+
         <!-- 테마 -->
-        <TextBlock Text="{l:T set_theme}" Style="{StaticResource SectionTitle}" Margin="0,8,0,0"/>
+        <l:SectionHeader Title="{l:T set_theme}"/>
         <WrapPanel Margin="0,8,0,0">
             <RadioButton x:Name="Theme0" Content="{l:T theme_system}" GroupName="theme" Margin="0,0,18,0" Checked="OnThemeChecked" Tag="0"/>
             <RadioButton x:Name="Theme1" Content="{l:T theme_light}" GroupName="theme" Margin="0,0,18,0" Checked="OnThemeChecked" Tag="1"/>
@@ -76,10 +80,6 @@
                      PreviewKeyDown="OnEditKeyDown" ToolTip="{l:T edit_key_tip}"/>
             <Button Grid.Column="1" Content="{l:T btn_default_icon}" Style="{StaticResource SecondaryButton}" MinWidth="0" Margin="8,0,0,0" Click="OnEditKeyDefault"/>
         </Grid>
-
-        <!-- 언어 -->
-        <l:SectionHeader Title="{l:T set_language}"/>
-        <ComboBox x:Name="LangCombo" Margin="0,8,0,0" Padding="6,4" SelectionChanged="OnLangChanged"/>
 
         <!-- 탐색기 연동 -->
         <l:SectionHeader Title="{l:T set_shell}"/>
