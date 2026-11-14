@@ -18,11 +18,12 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- 상단 바: 검색 · 추가 · 설정 · 정렬 · 도움말 -->
+        <!-- 상단 바: 검색 · 추가 · 북마크 가져오기 · 설정 · 정렬 · 도움말 -->
         <Border Background="{DynamicResource PanelBg}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" Padding="10,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
@@ -49,9 +50,10 @@
 
                 <Button x:Name="AddBtn" Grid.Column="1" Style="{StaticResource IconButton}" Content="&#xE710;" ToolTip="{l:T tip_add}"
                         Click="OnAdd" AllowDrop="True" DragOver="OnWindowDragOver" Drop="OnWindowDrop"/>
-                <Button x:Name="SettingsBtn" Grid.Column="2" Style="{StaticResource IconButton}" Content="&#xE713;" ToolTip="{l:T tip_settings}" Click="OnSettings"/>
-                <Button x:Name="SortBtn" Grid.Column="3" Style="{StaticResource IconButton}" Content="&#xE8CB;" ToolTip="{l:T tip_sort}" Click="OnSort"/>
-                <Button x:Name="HelpBtn" Grid.Column="4" Style="{StaticResource IconButton}" Content="&#xE897;" ToolTip="{l:T tip_help}" Click="OnHelp"/>
+                <Button x:Name="ImportBtn" Grid.Column="2" Style="{StaticResource IconButton}" Content="&#xE896;" ToolTip="{l:T tip_import}" Click="OnImportBookmarks"/>
+                <Button x:Name="SettingsBtn" Grid.Column="3" Style="{StaticResource IconButton}" Content="&#xE713;" ToolTip="{l:T tip_settings}" Click="OnSettings"/>
+                <Button x:Name="SortBtn" Grid.Column="4" Style="{StaticResource IconButton}" Content="&#xE8CB;" ToolTip="{l:T tip_sort}" Click="OnSort"/>
+                <Button x:Name="HelpBtn" Grid.Column="5" Style="{StaticResource IconButton}" Content="&#xE897;" ToolTip="{l:T tip_help}" Click="OnHelp"/>
             </Grid>
         </Border>
 

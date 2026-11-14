@@ -435,6 +435,14 @@ public partial class App : Application
                 case "settings": w = new SettingsWindow(); break;
                 case "help": w = new HelpWindow(); break;
                 case "apppicker": w = new AppPickerWindow(); break;
+                case "bookmarks":
+                    {
+                        // 개발용: 북마크 HTML 을 읽어 가져오기 창을 그린다 (첫 폴더를 체크한 모양으로)
+                        var root = BookmarkHtml.Parse(File.ReadAllText(list!, Encoding.UTF8));
+                        if (root.Children.Count > 0) root.Children[0].IsChecked = true;
+                        w = new BookmarkImportWindow(root, list!);
+                        break;
+                    }
                 case "message": w = new MessageWindow("'테스트' 항목을 목록에서 삭제하시겠습니까?\n(실제 프로그램이나 파일은 지워지지 않습니다.)", AppInfo.Name, MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No); break;
                 case "start": w = new StartWindow(); break;
                 case "memo": w = new MemoWindow("메모 예시", "첫 줄\n둘째 줄 — 길게 써도 줄이 바뀌어 보여야 합니다. " + new string('가', 60)); break;

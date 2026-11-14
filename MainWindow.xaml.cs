@@ -529,6 +529,50 @@ public partial class MainWindow : Window
 
     // ─────────────── 설정 · 도움말 ───────────────
 
+    // ─────────────── 북마크 HTML 에서 골라 가져오기 ───────────────
+
+    void OnImportBookmarks(object sender, RoutedEventArgs e)
+    {
+        var dlg = new Microsoft.Win32.OpenFileDialog
+        {
+            Filter = Loc.T("bm_filter") + "|*.html;*.htm|" + Loc.T("filter_all") + "|*.*",
+            CheckFileExists = true,
+        };
+        if (dlg.ShowDialog(this) != true) return;
+
+        BmNode root;
+        try { root = BookmarkHtml.Parse(File.ReadAllText(dlg.FileName, System.Text.Encoding.UTF8)); }
+        catch (Exception ex)
+        {
+            Log.Write("북마크 파일 읽기 실패 " + dlg.FileName + ": " + ex.Message);
+            ShowError(Loc.F("bm_read_fail", ex.Message));
+            return;
+        }
+        if (root.Leaves().Any() == false) { ShowError(Loc.T("bm_none")); return; }
+
+        var win = new BookmarkImportWindow(root, dlg.FileName) { Owner = this };
+        if (win.ShowDialog() != true || win.Result.Count == 0) return;
+
+        // 같은 경로·주소 설정(기본: 등록 제외)을 그대로 따른다. 사이트 아이콘은 여기서 받지 않는다 (수정 창을 열 때 받는다).
+        int added = 0, skipped = 0;
+        ItemVM? last = null;
+        foreach (var (name, url, folder) in win.Result)
+        {
+            var it = new ListItem { Name = name, Target = url, Description = win.FolderAsDescription ? folder : "" };
+            var (vm, skip) = Place(it);
+            if (skip) skipped++;
+            else { added++; last = vm; }
+        }
+        if (added > 0)
+        {
+            Save();
+            UpdateEmpty();
+            if (last != null) List.ScrollIntoView(last);
+        }
+        if (skipped > 0)
+            MessageBox.Show(this, Loc.F("bm_done_skipped", added, skipped), AppInfo.Name, MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
     void OnSettings(object sender, RoutedEventArgs e) => new SettingsWindow { Owner = this }.ShowDialog();
     void OnHelp(object sender, RoutedEventArgs e) => new HelpWindow { Owner = this }.ShowDialog();
 
