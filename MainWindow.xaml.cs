@@ -156,6 +156,53 @@ public partial class MainWindow : Window
     {
         var key = e.Key == Key.System ? e.SystemKey : e.Key;
         bool typing = Keyboard.FocusedElement is TextBox tb && tb != SearchBox;
+        var mods = Keyboard.Modifiers;
+        bool inText = Keyboard.FocusedElement is TextBox;
+
+        // ── 탐색기와 같은 단축키 (도움말의 "단축키와 마우스" 참고) ──
+        if (mods == ModifierKeys.Control && key is Key.W or Key.F or Key.E or Key.N)
+        {
+            if (key == Key.W) Close();                                                    // Ctrl+W: 창 닫기
+            else if (key == Key.N) { if (!e.IsRepeat) AddItem(new ListItem()); }          // Ctrl+N: 새 항목 추가
+            else { SearchBox.Focus(); SearchBox.SelectAll(); }                            // Ctrl+F / Ctrl+E: 검색 칸으로
+            e.Handled = true;
+            return;
+        }
+        if (mods == ModifierKeys.Alt && key is Key.Left or Key.Right or Key.Enter)
+        {
+            if (key == Key.Left) GoBack();                                                // Alt+←: 이전 목록
+            else if (key == Key.Right) GoForward();                                       // Alt+→: 다시 앞으로
+            else if (!e.IsRepeat && List.SelectedItems.Count == 1 && List.SelectedItem is ItemVM alt) EditItem(alt); // Alt+Enter: 수정 창
+            e.Handled = true;
+            return;
+        }
+        if ((key == Key.Apps && mods == ModifierKeys.None) || (key == Key.F10 && mods == ModifierKeys.Shift))
+        {
+            ShowMenuForSelection();                                                       // Shift+F10 / 메뉴 키: 우클릭 메뉴
+            e.Handled = true;
+            return;
+        }
+        if (key == Key.Escape && mods == ModifierKeys.None)
+        {
+            // Esc: 검색 중이면 검색어를 지우고 목록으로 돌아간다. 검색 칸에서 눌렀다면 목록으로 포커스를 옮긴다.
+            if (Searching) SearchBox.Clear();
+            if (Searching || Keyboard.FocusedElement == SearchBox) { List.Focus(); e.Handled = true; }
+            return;
+        }
+        if ((key == Key.Home || key == Key.End) && mods == ModifierKeys.None && !inText)
+        {
+            var shown = _view.Cast<ItemVM>().ToList();                                    // Home / End: 맨 위 / 맨 아래 항목 선택
+            if (shown.Count > 0)
+            {
+                var target = key == Key.Home ? shown[0] : shown[^1];
+                List.SelectedItems.Clear();
+                List.SelectedItem = target;
+                List.ScrollIntoView(target);
+                Dispatcher.BeginInvoke(new Action(() => (List.ItemContainerGenerator.ContainerFromItem(target) as ListBoxItem)?.Focus()), System.Windows.Threading.DispatcherPriority.Background);
+            }
+            e.Handled = true;
+            return;
+        }
 
         if (key == Key.Enter && Keyboard.Modifiers == ModifierKeys.None && !typing)
         {
@@ -515,11 +562,30 @@ public partial class MainWindow : Window
     {
         var vm = ItemAt(e.GetPosition(List));
         if (vm == null) return;
+        ShowItemMenu(vm, null);
+        e.Handled = true;
+    }
+
+    /// <summary>Shift+F10 / 메뉴 키: 선택한 줄(여럿이면 첫 줄)의 우클릭 메뉴를 그 줄 아래에 연다.</summary>
+    void ShowMenuForSelection()
+    {
+        var sel = SelectedVms();
+        if (sel.Count == 0) return;
+        var vm = sel[0];
+        List.ScrollIntoView(vm);
+        List.UpdateLayout();
+        ShowItemMenu(vm, List.ItemContainerGenerator.ContainerFromItem(vm) as FrameworkElement);
+    }
+
+    /// <param name="anchor">키보드로 열 때 메뉴를 붙일 줄. 마우스 우클릭이면 null (마우스 위치에 뜬다).</param>
+    void ShowItemMenu(ItemVM vm, FrameworkElement? anchor)
+    {
         if (!List.SelectedItems.Contains(vm)) List.SelectedItem = vm;
         var sel = SelectedVms();
         bool custom = _doc.Sort == SortMode.Custom;
 
-        var menu = new ContextMenu { PlacementTarget = List };
+        var menu = new ContextMenu { PlacementTarget = anchor ?? List };
+        if (anchor != null) { menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom; menu.HorizontalOffset = 40; }
         MenuItem Mi(string key, Action act, bool enabled = true)
         {
             var mi = new MenuItem { Header = Loc.T(key), IsEnabled = enabled };
@@ -546,7 +612,6 @@ public partial class MainWindow : Window
             menu.Items.Add(Mi("menu_delete", () => DeleteItem(vm)));
         }
         menu.IsOpen = true;
-        e.Handled = true;
     }
 
     // ─────────────── 설정 · 도움말 ───────────────
