@@ -368,14 +368,15 @@ public partial class MainWindow : Window
     }
 
     /// <summary>설정의 "같은 경로·주소 등록" 방식에 따라 목록에 넣는다. 제외하면 skipped = true.</summary>
-    (ItemVM? Vm, bool Skipped) Place(ListItem it)
+    /// <param name="index">새 항목을 넣을 위치(_all 기준). 음수이거나 범위를 벗어나면 맨 끝에 넣는다. 덮어쓰기는 기존 줄 자리에서 바꾸므로 쓰이지 않는다.</param>
+    (ItemVM? Vm, bool Skipped) Place(ListItem it, int index = -1)
     {
         var dup = App.Settings.DuplicateMode == 0 ? null : FindDuplicate(it);
         if (dup == null)
         {
             WebIcons.Adopt(it); // 이미 받아 둔 사이트 아이콘이 있으면 바로 넣는다
             var vm = new ItemVM(it) { CanReorder = CanReorder };
-            _all.Add(vm);
+            if (index >= 0 && index <= _all.Count) _all.Insert(index, vm); else _all.Add(vm);
             return (vm, false);
         }
         if (App.Settings.DuplicateMode == 1) return (null, true);
@@ -645,9 +646,9 @@ public partial class MainWindow : Window
 
     /// <summary>다른 창이나 다른 목록에서 옮겨 온 항목을 이 목록 끝에 넣는다.</summary>
     /// <summary>같은 경로·주소 등록 설정을 따른다. 제외되면 false (원래 목록에서 빼지 않는다).</summary>
-    bool ReceiveItem(ListItem it)
+    bool ReceiveItem(ListItem it, int index = -1)
     {
-        var (vm, skipped) = Place(it);
+        var (vm, skipped) = Place(it, index);
         if (skipped) return false;
         Save();
         UpdateEmpty();
@@ -678,7 +679,8 @@ public partial class MainWindow : Window
     }
 
     /// <summary>다른 창에서 끌어 온 항목들을 이 창으로 옮긴다.</summary>
-    void TakeFromOtherWindow()
+    /// <param name="index">놓은 자리(_all 기준)에 차례로 넣는다. 음수면 맨 끝.</param>
+    void TakeFromOtherWindow(int index = -1)
     {
         var src = _dragSource; var items = _dragItems?.ToList();
         if (src == null || items == null || src == this) return;
@@ -686,7 +688,13 @@ public partial class MainWindow : Window
         {
             var moved = new List<ItemVM>();
             ListItem? skipped = null;
-            foreach (var it in items) { if (ReceiveItem(it.Item)) moved.Add(it); else skipped ??= it.Item; }
+            int at = index;
+            foreach (var it in items)
+            {
+                int before = _all.Count;
+                if (ReceiveItem(it.Item, at)) { moved.Add(it); if (at >= 0 && _all.Count > before) at++; } // 여러 개면 놓은 자리부터 순서대로
+                else skipped ??= it.Item;
+            }
             if (moved.Count > 0) src.RemoveMoved(moved);
             if (skipped != null) ShowSkipped(skipped);
         }));
@@ -811,7 +819,12 @@ public partial class MainWindow : Window
     {
         if (e.Data.GetDataPresent(DragFormat))
         {
-            if (ForeignSource != null) { ClearMark(); e.Effects = DragDropEffects.Move; e.Handled = true; return; }
+            if (ForeignSource != null)
+            {
+                // 다른 창에서 끌어 온 항목: 임의 정렬이면 놓을 자리를 표시한다 (그 자리에 들어간다)
+                if (CanReorder) { var fpos = e.GetPosition(List); UpdateMark(fpos); AutoScroll(fpos); } else ClearMark();
+                e.Effects = DragDropEffects.Move; e.Handled = true; return;
+            }
             if (!CanReorder) { e.Effects = DragDropEffects.None; e.Handled = true; return; }
             var pos = e.GetPosition(List);
             var into = IntoTarget(pos);
@@ -835,7 +848,16 @@ public partial class MainWindow : Window
     {
         if (e.Data.GetDataPresent(DragFormat))
         {
-            if (ForeignSource != null) { ClearMark(); e.Handled = true; TakeFromOtherWindow(); return; }
+            if (ForeignSource != null)
+            {
+                int idx = -1; // 이름순 정렬이거나 검색 중이면 자리가 의미 없으므로 맨 끝
+                if (CanReorder)
+                {
+                    var (t, above) = UpdateMark(e.GetPosition(List));
+                    if (t != null) idx = _all.IndexOf(t) + (above ? 0 : 1);
+                }
+                ClearMark(); e.Handled = true; TakeFromOtherWindow(idx); return;
+            }
             var drags = _dragVms.ToList();
             var into = drags.Count > 0 && CanReorder ? IntoTarget(e.GetPosition(List)) : null;
             if (into != null)
