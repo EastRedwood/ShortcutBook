@@ -44,7 +44,11 @@ public partial class ItemEditWindow : Window
         UpdatePreview(allowFetch: false); // 열었을 때의 확인은 위 대상 칸 설정이 일으키는 입력 대기(0.7초) 뒤에 한 번 한다
         WebIcons.Finished += OnWebIconFetched;
         Closed += (_, _) => { WebIcons.Finished -= OnWebIconFetched; _webTimer?.Stop(); };
-        Loaded += (_, _) => { NameBox.Focus(); NameBox.SelectAll(); };
+        Loaded += (_, _) =>
+        {
+            if (isNew) { NameBox.Focus(); NameBox.SelectAll(); } // 새 항목은 이름부터
+            else { DescBox.Focus(); DescBox.CaretIndex = DescBox.Text.Length; } // 기존 항목을 고칠 때는 설명 끝에서 시작
+        };
         // Ctrl+Enter = 바로 저장하고 닫기 (여러 줄 입력 칸에서도 줄바꿈이 되지 않게 먼저 가로챈다)
         PreviewKeyDown += (_, e) =>
         {
