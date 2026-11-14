@@ -44,7 +44,7 @@ internal static class IconService
     /// 새로 받아 오는 것은 allowFetch 이고 설정이 켜져 있을 때뿐이다 (수정 창에서만 true 로 부른다).</summary>
     static ImageSource? WebIcon(ListItem it, Uri origin, Uri page, int px, bool allowFetch)
     {
-        // 1) 항목 안에 저장된 아이콘  2) 이번 실행 중 받았거나 옛 폴더에 있던 것
+        // 1) 항목 안에 저장된 아이콘  2) 이번 실행 중 받은 것
         var bytes = WebIcons.HasStored(it, origin.Host) ? WebIcons.StoredBytes(it) : null;
         bytes ??= WebIcons.Lookup(origin.Host);
         if (bytes != null)

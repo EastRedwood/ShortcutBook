@@ -37,30 +37,13 @@ internal static partial class WebIcons
         return c;
     }
 
-    // 옛 버전(빌드 #35 이전)이 이 PC의 폴더에 따로 저장해 둔 아이콘. 새로 쓰지는 않고, 처음 열 때 항목 안으로 옮겨 담는 데만 읽는다.
-    static string LegacyFile(string host) => Path.Combine(AppInfo.DataDir, "webicons", host + ".img");
-
-    // 이번 실행 중에 받았거나 옛 폴더에서 읽은 사이트별 아이콘 (80px 이하 PNG 바이트). 파일로는 저장하지 않는다.
+    // 이번 실행 중에 받은 사이트별 아이콘 (80px 이하 PNG 바이트). 파일로는 저장하지 않는다 (항목 안에 저장되므로).
+    // 같은 사이트의 항목이 여러 개일 때 다시 받지 않고, 받는 중에 입력한 항목에 바로 넣으려고 잠깐 들고 있는다.
     static readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte[]> Memory = new(StringComparer.OrdinalIgnoreCase);
-    // 옛 폴더에 파일이 없던 사이트 (줄마다 같은 파일 확인을 되풀이하지 않으려고)
-    static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> NoLegacy = new(StringComparer.OrdinalIgnoreCase);
     const int MemoryLimit = 300; // 상주 프로그램이라 이번 실행 중 모아 두는 양에 상한을 둔다
 
-    /// <summary>이 사이트의 아이콘 바이트 (이번 실행 중 받은 것, 없으면 옛 폴더의 것). 없으면 null.</summary>
-    public static byte[]? Lookup(string host)
-    {
-        if (Memory.TryGetValue(host, out var b)) return b;
-        if (NoLegacy.ContainsKey(host)) return null;
-        try
-        {
-            var f = LegacyFile(host);
-            if (!File.Exists(f)) { NoLegacy[host] = true; return null; }
-            var n = Normalize(File.ReadAllBytes(f));
-            if (n != null) Remember(host, n);
-            return n;
-        }
-        catch (Exception ex) { Log.Write("옛 웹 아이콘 읽기 실패 " + host + ": " + ex.Message); return null; }
-    }
+    /// <summary>이 사이트의 아이콘 바이트 (이번 실행 중 받은 것). 없으면 null.</summary>
+    public static byte[]? Lookup(string host) => Memory.TryGetValue(host, out var b) ? b : null;
 
     static void Remember(string host, byte[] png)
     {
@@ -83,7 +66,7 @@ internal static partial class WebIcons
 
     /// <summary>
     /// 항목의 저장된 아이콘을 지금 대상에 맞게 정리한다: 웹 주소가 아니거나 아이콘을 직접 지정했으면 지우고,
-    /// 사이트가 바뀌었으면 옛 것을 버리고, 아이콘이 없는데 이미 받아 둔 것(이번 실행 또는 옛 폴더)이 있으면 채운다.
+    /// 사이트가 바뀌었으면 옛 것을 버리고, 아이콘이 없는데 이번 실행 중 받아 둔 것이 있으면 채운다.
     /// 바뀌었으면 true (목록을 다시 저장해야 한다).
     /// </summary>
     public static bool Adopt(ListItem it)

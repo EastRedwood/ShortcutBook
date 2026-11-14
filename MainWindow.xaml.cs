@@ -81,7 +81,6 @@ public partial class MainWindow : Window
         SearchBox.Clear();
         _all.Clear();
         foreach (var it in doc.Items) _all.Add(new ItemVM(it));
-        AdoptWebIcons();
         ApplySort();
         UpdateTitle();
         UpdateEmpty();
@@ -208,14 +207,6 @@ public partial class MainWindow : Window
             changed |= WebIcons.Adopt(vm.Item);
             vm.Refresh();
         }
-        if (changed) Save();
-    }
-
-    /// <summary>목록을 열 때: 옛 폴더(webicons)에 받아 둔 아이콘이 있으면 항목 안으로 옮겨 담는다. 바뀌었으면 한 번 저장한다.</summary>
-    void AdoptWebIcons()
-    {
-        bool changed = false;
-        foreach (var vm in _all) changed |= WebIcons.Adopt(vm.Item);
         if (changed) Save();
     }
 
