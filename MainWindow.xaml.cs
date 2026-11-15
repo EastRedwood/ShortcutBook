@@ -197,6 +197,12 @@ public partial class MainWindow : Window
             return;
         }
         if (key == Key.Apps && mods == ModifierKeys.None) { e.Handled = true; return; }   // 메뉴 키는 키를 뗄 때 연다 (OnWindowKeyUp)
+        if (key == Key.F1 && mods == ModifierKeys.None)
+        {
+            if (!e.IsRepeat) OnHelp(this, new RoutedEventArgs());                         // F1: 도움말 창
+            e.Handled = true;
+            return;
+        }
         if (key == Key.F5 && mods == ModifierKeys.None)
         {
             if (!e.IsRepeat) ReloadFromDisk();                                            // F5: 목록 파일 다시 읽기
