@@ -95,6 +95,7 @@ internal static partial class Launcher
             ShellOpen(p);
             return null;
         }
+        catch (Win32Exception ex) when (ex.NativeErrorCode == 1223) { return null; } // "연결 프로그램 선택" 창 등을 사용자가 취소함: 오류가 아니다
         catch (Exception ex) { return Loc.F("err_run_failed", ex.Message); }
     }
 
@@ -103,6 +104,7 @@ internal static partial class Launcher
         var u = (it.WebUrl ?? "").Trim();
         if (u.Length == 0) return null;
         try { ShellOpen(NormalizeUrl(u)); return null; }
+        catch (Win32Exception ex) when (ex.NativeErrorCode == 1223) { return null; } // 사용자가 취소함
         catch (Exception ex) { return Loc.F("err_run_failed", ex.Message); }
     }
 
