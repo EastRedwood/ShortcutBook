@@ -13,6 +13,7 @@ public static class AppInfo
     /// <summary>"새로 만들기 > 바로가기 목록 바로가기"로 만든 목록 파일이 모이는 폴더 (프로그램 폴더 안)</summary>
     public static string ListsDir => Path.Combine(AppContext.BaseDirectory, "Lists");
     public const string AuthorMail = "redwoodmane@gmail.com";
+    public const string Homepage = "https://eastredwood.pages.dev/";
 
     /// <summary>예: "v1.0.1 (빌드 #1)"</summary>
     public static string VersionText { get; } = Format(Assembly.GetExecutingAssembly().GetName().Version);

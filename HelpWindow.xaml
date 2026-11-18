@@ -12,6 +12,11 @@
         <TextBlock x:Name="VersionText" Foreground="{DynamicResource SubText}" Margin="0,4,0,0"/>
         <TextBlock Text="{l:T help_summary}" Foreground="{DynamicResource SubText}" TextWrapping="Wrap" Margin="0,6,0,0"/>
 
+        <TextBlock Margin="0,10,0,0">
+            <Run Text="{l:T help_homepage}"/>
+            <Hyperlink x:Name="HomeLink" Click="OnHomeClick"><Run x:Name="HomeRun"/></Hyperlink>
+        </TextBlock>
+
         <TextBlock Text="{l:T help_howto_title}" Style="{StaticResource SectionTitle}"/>
         <TextBlock x:Name="HowtoText" TextWrapping="Wrap" LineHeight="21" Margin="0,8,0,0"/>
 

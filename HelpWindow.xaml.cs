@@ -17,6 +17,7 @@ public partial class HelpWindow : Window
         BuildKeys();
         VersionText.Text = AppInfo.VersionText;
         MailRun.Text = AppInfo.AuthorMail;
+        HomeRun.Text = AppInfo.Homepage;
     }
 
     /// <summary>
@@ -48,6 +49,12 @@ public partial class HelpWindow : Window
             row.Children.Add(desc);
             KeysPanel.Children.Add(row);
         }
+    }
+
+    void OnHomeClick(object sender, RoutedEventArgs e)
+    {
+        try { Launcher.ShellOpen(AppInfo.Homepage); }
+        catch (Exception ex) { Log.Write("홈페이지 열기 실패: " + ex.Message); }
     }
 
     void OnMailClick(object sender, RoutedEventArgs e)
