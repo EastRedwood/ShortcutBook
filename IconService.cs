@@ -13,6 +13,8 @@ internal static class IconService
     // 시작할 때 백그라운드 스레드가 미리 읽어 두므로 스레드에 안전한 사전을 쓴다 (읽은 그림은 Freeze 되어 있다)
     static readonly System.Collections.Concurrent.ConcurrentDictionary<string, ImageSource?> Cache = new();
 
+    const int CacheLimit = 1500;
+
     public static void Clear() => Cache.Clear();
 
     [DllImport("user32.dll")] static extern uint GetDpiForSystem();
@@ -36,7 +38,11 @@ internal static class IconService
         var key = src + "|" + px;
         if (Cache.TryGetValue(key, out var hit)) return hit;
         var img = Load(src, px);
-        if (cache) Cache[key] = img;
+        if (cache)
+        {
+            if (Cache.Count >= CacheLimit) Cache.Clear(); // 아이콘은 필요하면 다시 읽는다
+            Cache[key] = img;
+        }
         return img;
     }
 

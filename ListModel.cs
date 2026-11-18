@@ -65,20 +65,30 @@ public sealed class ListDocument
         AllowTrailingCommas = true,
     };
 
+    /// <summary>이 문서를 읽을 때 파일 내용의 지문 (SHA-256). 밖에서 바뀐 파일을 감지하는 데 쓴다.</summary>
+    [JsonIgnore]
+    public string LoadedHash { get; private set; } = "";
+
     public static ListDocument Load(string path)
     {
-        var text = File.ReadAllText(path, Encoding.UTF8);
-        if (string.IsNullOrWhiteSpace(text)) return new ListDocument();
-        return JsonSerializer.Deserialize<ListDocument>(text, Opt) ?? new ListDocument();
+        var bytes = File.ReadAllBytes(path);
+        var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes));
+        var text = Encoding.UTF8.GetString(bytes);
+        if (text.Length > 0 && text[0] == (char)0xFEFF) text = text[1..]; // BOM (ReadAllText 가 하던 것)
+        var doc = string.IsNullOrWhiteSpace(text) ? new ListDocument() : JsonSerializer.Deserialize<ListDocument>(text, Opt) ?? new ListDocument();
+        doc.LoadedHash = hash;
+        return doc;
     }
 
-    public void Save(string path)
+    /// <summary>저장하고, 쓴 파일 내용의 지문(SHA-256)을 돌려준다.</summary>
+    public string Save(string path)
     {
-        var json = JsonSerializer.Serialize(this, Opt);
+        var bytes = new UTF8Encoding(false).GetBytes(JsonSerializer.Serialize(this, Opt));
         var tmp = path + ".tmp";
-        File.WriteAllText(tmp, json, new UTF8Encoding(false));
+        File.WriteAllBytes(tmp, bytes);
         if (File.Exists(path)) File.Replace(tmp, path, null);
         else File.Move(tmp, path);
+        return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes));
     }
 }
 

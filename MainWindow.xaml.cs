@@ -84,7 +84,7 @@ public partial class MainWindow : Window
         ApplySort();
         UpdateTitle();
         UpdateEmpty();
-        MarkSynced();
+        MarkSynced(doc.LoadedHash);
     }
 
     // ─────────────── 현재 창에서 다른 목록으로 이동 (뒤로 · 앞으로) ───────────────
@@ -339,11 +339,11 @@ public partial class MainWindow : Window
         catch { return ""; }
     }
 
-    /// <summary>방금 읽었거나 저장한 파일 상태를 "이 프로그램이 아는 상태"로 기록한다.</summary>
-    void MarkSynced()
+    /// <summary>방금 읽었거나 저장한 파일 상태를 "이 프로그램이 아는 상태"로 기록한다. hash 는 읽거나 쓸 때 이미 계산한 지문이다 (파일을 다시 읽지 않으려고).</summary>
+    void MarkSynced(string hash)
     {
         _quick = QuickOf(ListPath);
-        _hash = HashOf(ListPath);
+        _hash = hash;
     }
 
     /// <summary>
@@ -393,8 +393,7 @@ public partial class MainWindow : Window
         try
         {
             _doc.Items = _all.Select(v => v.Item).ToList();
-            _doc.Save(ListPath);
-            MarkSynced();
+            MarkSynced(_doc.Save(ListPath));
         }
         catch (Exception ex)
         {
@@ -495,11 +494,12 @@ public partial class MainWindow : Window
     void AddMany(IEnumerable<string> paths)
     {
         ItemVM? last = null;
+        var keys = BuildKeyMap();
         foreach (var f in paths)
         {
             var it = ShortcutImport.FromPath(f);
             if (string.IsNullOrWhiteSpace(it.Name)) it.Name = Path.GetFileName(f);
-            var (vm, skipped) = Place(it);
+            var (vm, skipped) = Place(it, -1, keys);
             if (!skipped) last = vm;
         }
         if (last == null) return;
@@ -510,14 +510,23 @@ public partial class MainWindow : Window
 
     /// <summary>설정의 "같은 경로·주소 등록" 방식에 따라 목록에 넣는다. 제외하면 skipped = true.</summary>
     /// <param name="index">새 항목을 넣을 위치(_all 기준). 음수이거나 범위를 벗어나면 맨 끝에 넣는다. 덮어쓰기는 기존 줄 자리에서 바꾸므로 쓰이지 않는다.</param>
-    (ItemVM? Vm, bool Skipped) Place(ListItem it, int index = -1)
+    /// <param name="keys">한꺼번에 여러 개를 넣을 때 쓰는 "대상 키 → 줄" 사전. 항목마다 모든 줄의 키(경로 정규화)를 다시 계산하던 것을 줄이려고 처음에 한 번 만들어 넘긴다.</param>
+    (ItemVM? Vm, bool Skipped) Place(ListItem it, int index = -1, Dictionary<string, ItemVM>? keys = null)
     {
-        var dup = App.Settings.DuplicateMode == 0 ? null : FindDuplicate(it);
+        string key = "";
+        ItemVM? dup = null;
+        if (App.Settings.DuplicateMode != 0)
+        {
+            if (keys == null) dup = FindDuplicate(it);
+            else { key = TargetKey(it.Target); if (key.Length > 0) keys.TryGetValue(key, out dup); }
+        }
+        if (keys != null && dup == null && key.Length == 0) key = TargetKey(it.Target);
         if (dup == null)
         {
             WebIcons.Adopt(it); // 이미 받아 둔 사이트 아이콘이 있으면 바로 넣는다
             var vm = new ItemVM(it) { CanReorder = CanReorder };
             if (index >= 0 && index <= _all.Count) _all.Insert(index, vm); else _all.Add(vm);
+            if (keys != null && key.Length > 0) keys.TryAdd(key, vm);
             return (vm, false);
         }
         if (App.Settings.DuplicateMode == 1) return (null, true);
@@ -526,6 +535,14 @@ public partial class MainWindow : Window
         dup.Refresh();
         RefreshViewKeepSelection(dup);
         return (dup, false);
+    }
+
+    /// <summary>지금 목록의 모든 줄을 "대상 키 → 줄"로 한 번에 정리한다 (같은 키가 여럿이면 앞의 것).</summary>
+    Dictionary<string, ItemVM> BuildKeyMap()
+    {
+        var d = new Dictionary<string, ItemVM>();
+        foreach (var v in _all) { var k = TargetKey(v.Item.Target); if (k.Length > 0) d.TryAdd(k, v); }
+        return d;
     }
 
     ItemVM? FindDuplicate(ListItem it)
@@ -717,11 +734,12 @@ public partial class MainWindow : Window
         // 같은 경로·주소 설정(기본: 등록 제외)을 그대로 따른다
         int added = 0, skipped = 0;
         ItemVM? last = null;
+        var keys = BuildKeyMap();
         var origins = new Dictionary<string, (Uri Origin, Uri Page)>(StringComparer.OrdinalIgnoreCase);
         var addedVms = new List<ItemVM>();
         foreach (var it in items)
         {
-            var (vm, skip) = Place(it);
+            var (vm, skip) = Place(it, -1, keys);
             if (skip) { skipped++; continue; }
             added++; last = vm;
             if (vm != null) addedVms.Add(vm);
