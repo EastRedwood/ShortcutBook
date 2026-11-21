@@ -52,9 +52,25 @@ public sealed class Loc : INotifyPropertyChanged
 
     public static string DefaultCode()
     {
-        var two = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+        var culture = CultureInfo.CurrentUICulture;
+        var two = culture.TwoLetterISOLanguageName;
+        string[] candidates;
+        if (two == "zh")
+        {
+            // 중국어는 간체/번체 파일이 따로 있다: 대만·홍콩·마카오 또는 Hant 표기면 번체, 그 밖에는 간체
+            var name = culture.Name;
+            var traditional = name.Contains("Hant", StringComparison.OrdinalIgnoreCase)
+                || name.EndsWith("-TW", StringComparison.OrdinalIgnoreCase)
+                || name.EndsWith("-HK", StringComparison.OrdinalIgnoreCase)
+                || name.EndsWith("-MO", StringComparison.OrdinalIgnoreCase);
+            candidates = new[] { traditional ? "zh-Hant" : "zh-Hans", "zh" };
+        }
+        else candidates = new[] { culture.Name, two };
+
         // 언어 파일이 있는지만 본다 (모든 파일을 열어 표시 이름까지 읽을 필요가 없다)
-        return File.Exists(Path.Combine(LangDir, two + ".json")) ? two : "en";
+        foreach (var c in candidates)
+            if (File.Exists(Path.Combine(LangDir, c + ".json"))) return c;
+        return "en";
     }
 
     public void Load(string? code)
