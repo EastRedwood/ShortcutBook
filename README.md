@@ -6,6 +6,12 @@
 - WPF / .NET 10 (`net10.0-windows10.0.19041.0`, Fluent 테마 사용), 빌드 번호는 `.build_number` (실행 파일 버전 `1.0.<빌드번호>`)
 - 제작자: 이스트 / 지원 연락: redwoodmane@gmail.com (도움말 `?` 창에 표시)
 
+## 설치
+
+- 설치 파일 `ShortcutBook-Setup-<버전>.exe` 를 실행합니다 (Windows 10/11 64비트, .NET 설치 불필요 — 프로그램에 포함). 관리자 권한 없이 현재 사용자 영역(`%LocalAppData%\Programs\ShortcutBook`)에 설치되고 시작 메뉴에 등록됩니다. 설치가 끝나면 `.sbook` 탐색기 연동이 자동 등록됩니다.
+- 제거: 설정 > 앱 에서 ShortcutBook 을 지웁니다. 탐색기 연동(`HKCU\Software\Classes` 의 `.sbook`·`.sblink` 등)도 함께 지워지며, 사용자의 목록 파일(설치 폴더의 `Lists` 폴더 포함)은 지우지 않습니다. 설정·로그는 `%AppData%\ShortcutBook` 에 남습니다.
+- 설치 파일 만들기: `installer\build-installer.ps1` (필요: .NET SDK 10, Inno Setup 6 — `winget install JRSoftware.InnoSetup`). 게시(`dotnet publish`)와 설치 파일 생성을 한 번에 하며 결과는 `publish\installer\` 에 생깁니다. 게시 때는 `-p:SkipShellRegister=true` 로 빌드 후 탐색기 연동 자동 갱신을 끕니다(빌드 폴더로 덮어써지는 것 방지).
+
 ## 목록 파일과 탐색기 연동
 
 - 목록 하나는 확장자 `.sbook` 파일(JSON) 하나입니다. 더블클릭하면 이 프로그램이 열립니다.

@@ -37,7 +37,7 @@
   </ItemGroup>
   <!-- 빌드가 끝나면 탐색기 연결(.sbook)을 방금 만든 실행 파일로 자동 갱신한다.
        (예전 빌드 경로가 등록된 채로 남아 옛 빌드가 열리는 문제 방지) -->
-  <Target Name="RegisterShellAfterBuild" AfterTargets="Build" Condition="'$(MSBuildProjectName)' == 'ShortcutBook' And Exists('$(TargetDir)$(AssemblyName).exe')">
+  <Target Name="RegisterShellAfterBuild" AfterTargets="Build" Condition="'$(MSBuildProjectName)' == 'ShortcutBook' And '$(SkipShellRegister)' != 'true' And Exists('$(TargetDir)$(AssemblyName).exe')">
     <Exec Command="&quot;$(TargetDir)$(AssemblyName).exe&quot; --register" ContinueOnError="true" IgnoreExitCode="true" />
   </Target>
 </Project>
