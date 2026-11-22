@@ -5,7 +5,7 @@
 
 - WPF / .NET 10 (`net10.0-windows10.0.19041.0`, Fluent 테마 사용), 빌드 번호는 `.build_number` (실행 파일 버전 `1.0.<빌드번호>`)
 - 제작자: 이스트 / 지원 연락: redwoodmane@gmail.com (도움말 `?` 창에 표시)
-- 라이선스: [MIT](LICENSE). 사용하는 라이브러리: SharpVectors(웹 아이콘 SVG 변환, BSD-3-Clause 계열)
+- 라이선스: [MIT](LICENSE). 사용하는 라이브러리(SharpVectors, .NET)의 고지는 [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) 에 있으며 설치 파일에도 함께 들어갑니다.
 
 ## 설치
 
